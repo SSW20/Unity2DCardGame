@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2573244215482062865}
   - component: {fileID: 8613148962205406889}
   - component: {fileID: 5584862953481568629}
+  - component: {fileID: 8724000564190233360}
   m_Layer: 5
   m_Name: Card
   m_TagString: Untagged
@@ -76,6 +77,24 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &8724000564190233360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1302585807115820156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3a183dc6a36eee48af2f0ee265d17ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  UseAnimation: 1
+  hoverScale: 1.5
+  animSpeed: 10
+  cardImage: {fileID: 0}
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  hoverColor: {r: 1, g: 0.9, b: 0.5, a: 1}
 --- !u!1 &1934062189243274493
 GameObject:
   m_ObjectHideFlags: 0
