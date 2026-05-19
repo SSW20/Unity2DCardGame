@@ -1,16 +1,13 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class CardUI : MonoBehaviour,
-    IPointerEnterHandler,
-    IPointerExitHandler
+public class CardUI : MonoBehaviour
 {
     [Header("Card Animation")]
     [SerializeField] private bool UseAnimation = true;
 
     [Header("Scale")]
-    [SerializeField] private float hoverScale = 1.5f;
+    [SerializeField] private float hoverScale = 1.3f;
     [SerializeField] private float animSpeed = 10f;
 
     [Header("Highlight")]
@@ -19,16 +16,16 @@ public class CardUI : MonoBehaviour,
 
     private Vector3 originalScale;
     private Vector3 targetScale;
-    private Color originalColor;  // 원래 색을 Start에서 저장
+    private Color originalColor;
 
     void Start()
     {
-        if (cardImage == null)
-            cardImage = GetComponent<Image>();
+        // if (cardImage == null)
+        //     cardImage = GetComponent<Image>();
 
         originalScale = transform.localScale;
         targetScale = originalScale;
-        originalColor = cardImage.color;  // 원래 색 저장
+        // originalColor = cardImage.color;
     }
 
     void Update()
@@ -41,23 +38,20 @@ public class CardUI : MonoBehaviour,
         );
     }
 
-    public void OnPointerEnter(PointerEventData eventData)
+    // HandHoverManager가 직접 호출
+    public void SetHover(bool isHover)
     {
         if (!UseAnimation) return;
-        targetScale = originalScale * hoverScale;
-        cardImage.color = hoverColor;
 
-        Canvas cardCanvas = GetComponent<Canvas>();
-        cardCanvas.sortingOrder = 10;
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        if (!UseAnimation) return;
-    targetScale = originalScale;
-    cardImage.color = originalColor;
-
-    Canvas cardCanvas = GetComponent<Canvas>();
-    cardCanvas.sortingOrder = 0;
+        if (isHover)
+        {
+            targetScale = originalScale * hoverScale;
+            // cardImage.color = hoverColor;
+        }
+        else
+        {
+            targetScale = originalScale;
+            // cardImage.color = originalColor;
+        }
     }
 }

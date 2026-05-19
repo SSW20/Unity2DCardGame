@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class HandLayoutController : MonoBehaviour
+public class HandLayoutManager : MonoBehaviour
 {
     [Header("Layout")]
     [SerializeField] private float cardSpacing = 80f;
@@ -37,7 +37,7 @@ public class HandLayoutController : MonoBehaviour
 
             cards[i].localPosition = new Vector3(x, y, 0);
             cards[i].localRotation = Quaternion.Euler(0, 0, angle);
-            // localScale은 건드리지 않음 ← 핵심
+           
         }
     }
 }

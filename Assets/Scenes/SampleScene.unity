@@ -205,10 +205,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1151739182}
     m_Modifications:
-    - target: {fileID: -2929004738900723298, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
-      propertyPath: m_AdditionalShaderChannelsFlag
-      value: 25
-      objectReference: {fileID: 0}
     - target: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
       propertyPath: m_Name
       value: Card (2)
@@ -311,10 +307,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2051791735}
     m_Modifications:
-    - target: {fileID: -2929004738900723298, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
-      propertyPath: m_AdditionalShaderChannelsFlag
-      value: 25
-      objectReference: {fileID: 0}
     - target: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
       propertyPath: m_Name
       value: Card (2)
@@ -412,10 +404,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1151739182}
     m_Modifications:
-    - target: {fileID: -2929004738900723298, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
-      propertyPath: m_AdditionalShaderChannelsFlag
-      value: 25
-      objectReference: {fileID: 0}
     - target: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
       propertyPath: m_Name
       value: Card (1)
@@ -1017,10 +1005,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 302995025}
     m_Modifications:
-    - target: {fileID: -2929004738900723298, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
-      propertyPath: m_AdditionalShaderChannelsFlag
-      value: 25
-      objectReference: {fileID: 0}
     - target: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
       propertyPath: m_Name
       value: Card
@@ -1235,10 +1219,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1151739182}
     m_Modifications:
-    - target: {fileID: -2929004738900723298, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
-      propertyPath: m_AdditionalShaderChannelsFlag
-      value: 25
-      objectReference: {fileID: 0}
     - target: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
       propertyPath: m_Name
       value: Card
@@ -1475,10 +1455,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 302995025}
     m_Modifications:
-    - target: {fileID: -2929004738900723298, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
-      propertyPath: m_AdditionalShaderChannelsFlag
-      value: 25
-      objectReference: {fileID: 0}
     - target: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
       propertyPath: m_Name
       value: Card (1)
@@ -3484,10 +3460,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2051791735}
     m_Modifications:
-    - target: {fileID: -2929004738900723298, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
-      propertyPath: m_AdditionalShaderChannelsFlag
-      value: 25
-      objectReference: {fileID: 0}
     - target: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
       propertyPath: m_Name
       value: Card (4)
@@ -3848,10 +3820,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2051791735}
     m_Modifications:
-    - target: {fileID: -2929004738900723298, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
-      propertyPath: m_AdditionalShaderChannelsFlag
-      value: 25
-      objectReference: {fileID: 0}
     - target: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
       propertyPath: m_Name
       value: Card
@@ -4367,10 +4335,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2051791735}
     m_Modifications:
-    - target: {fileID: -2929004738900723298, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
-      propertyPath: m_AdditionalShaderChannelsFlag
-      value: 25
-      objectReference: {fileID: 0}
     - target: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
       propertyPath: m_Name
       value: Card (1)
@@ -4570,10 +4534,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2051791735}
     m_Modifications:
-    - target: {fileID: -2929004738900723298, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
-      propertyPath: m_AdditionalShaderChannelsFlag
-      value: 25
-      objectReference: {fileID: 0}
     - target: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
       propertyPath: m_Name
       value: Card (3)
@@ -4907,10 +4867,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 302995025}
     m_Modifications:
-    - target: {fileID: -2929004738900723298, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
-      propertyPath: m_AdditionalShaderChannelsFlag
-      value: 25
-      objectReference: {fileID: 0}
     - target: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
       propertyPath: m_Name
       value: Card (2)
@@ -5932,6 +5888,7 @@ GameObject:
   - component: {fileID: 2051791737}
   - component: {fileID: 2051791739}
   - component: {fileID: 2051791738}
+  - component: {fileID: 2051791740}
   m_Layer: 5
   m_Name: HandPannel
   m_TagString: Untagged
@@ -6003,6 +5960,18 @@ MonoBehaviour:
   animSpeed: 10
   cardImage: {fileID: 0}
   hoverColor: {r: 1, g: 0.9, b: 0.5, a: 1}
+--- !u!114 &2051791740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2051791734}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c82c8182b4a8b545aa0ac350e75684e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2106436998
 GameObject:
   m_ObjectHideFlags: 0
