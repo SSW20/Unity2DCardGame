@@ -7,6 +7,7 @@ public class HandHoverManager : MonoBehaviour
 
     void Start()
     {
+        cards = FindObjectsOfType<CardUI>();
     }
 
     void Update()
@@ -29,8 +30,8 @@ public class HandHoverManager : MonoBehaviour
     private CardUI GetNearestCardUnderMouse()
     {
             Vector2 mousePos = Input.mousePosition;
-    CardUI nearest = null;
-    float minDist = 60f; // 이 거리 안에 있어야 호버 인정 (값 조절 가능)
+            CardUI nearest = null;
+            float minDist = 60f; // 이 거리 안에 있어야 호버 인정 (값 조절 가능)
 
     foreach (CardUI card in cards)
     {

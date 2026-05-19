@@ -18,6 +18,16 @@ public class CardUI : MonoBehaviour
     private Vector3 targetScale;
     private Color originalColor;
 
+    private int originalIndex;
+
+    // private Canvas cardCanvas;
+
+    void Awake()
+    {
+        // cardCanvas = GetComponent<Canvas>();
+        originalIndex = transform.GetSiblingIndex();
+    }
+
     void Start()
     {
         // if (cardImage == null)
@@ -47,11 +57,14 @@ public class CardUI : MonoBehaviour
         {
             targetScale = originalScale * hoverScale;
             // cardImage.color = hoverColor;
+            transform.SetAsLastSibling();
         }
         else
         {
             targetScale = originalScale;
             // cardImage.color = originalColor;
+            // cardCanvas.sortingOrder = 0; 
+            transform.SetSiblingIndex(originalIndex);
         }
     }
 }
