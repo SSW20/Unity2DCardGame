@@ -20,8 +20,9 @@ public class CardUI : MonoBehaviour
     [SerializeField] private Color hoverColor = new Color(1f, 0.9f, 0.5f);
 
     [Header("Card Type")]
-    [SerializeField] private CardType cardType;
+    [SerializeField] public CardType cardType;
 
+    public bool bIsHover = false;
     private Vector3 originalScale;
     private Vector3 targetScale;
     private Color originalColor;
@@ -65,20 +66,22 @@ public class CardUI : MonoBehaviour
         {
             targetScale = originalScale * hoverScale;
             // cardImage.color = hoverColor;
-            if(cardType == CardType.Hand)
-            {
-              transform.SetAsLastSibling();
-            }
+            // if(cardType == CardType.Hand)
+            // {
+            //   transform.SetAsLastSibling();
+            // }
+            bIsHover = true;
         }
         else
         {
             targetScale = originalScale;
             // cardImage.color = originalColor;
             // cardCanvas.sortingOrder = 0; 
-            if(cardType == CardType.Hand)
-            {
-              transform.SetSiblingIndex(originalIndex);
-            }
+            // if(cardType == CardType.Hand)
+            // {
+            //   transform.SetSiblingIndex(originalIndex);
+            // }
+            bIsHover = false;
         }
     }
 }

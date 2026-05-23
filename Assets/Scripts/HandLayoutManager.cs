@@ -7,6 +7,9 @@ public class HandLayoutManager : MonoBehaviour
     [SerializeField] private float cardSpacing = 80f;
     [SerializeField] private float maxAngle = 20f;
     [SerializeField] private float arcHeight = 30f;
+    [SerializeField] private float hoverLift = 20f;
+
+
 
     // 각 카드의 원래 위치/회전 저장
     private List<RectTransform> cards = new List<RectTransform>();
@@ -16,9 +19,14 @@ public class HandLayoutManager : MonoBehaviour
         UpdateLayout();
     }
 
+    void Update()
+    {
+        CheckHandHovered();
+    }
+
     // Update() 제거 — 매 프레임 재계산 안함
 
-    public void UpdateLayout()
+    public void UpdateLayout(float HoverLift = 0f)
     {
         cards.Clear();
         foreach (RectTransform child in transform)
@@ -35,9 +43,29 @@ public class HandLayoutManager : MonoBehaviour
             float y = -(t * t) * arcHeight * count;
             float angle = -t * maxAngle * 2;
 
-            cards[i].localPosition = new Vector3(x, y, 0);
+            if(HoverLift > 0f)
+            {
+                y += HoverLift;
+                angle = 0f;
+            }
+            cards[i].localPosition = new Vector3(x, y + HoverLift, 0);
             cards[i].localRotation = Quaternion.Euler(0, 0, angle);
-           
+        }
+    }
+
+    public void CheckHandHovered()
+    {
+        foreach (RectTransform card in cards)
+        {
+            CardUI cardUI = card.GetComponent<CardUI>();
+            if (cardUI != null)
+            {
+                if (cardUI.bIsHover && cardUI.cardType == CardType.Hand)
+                {
+                    UpdateLayout(hoverLift);
+                    break;
+                }
+            }
         }
     }
 }

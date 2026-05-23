@@ -30,8 +30,7 @@ public class HandHoverManager : MonoBehaviour
             if (card != null)
             {
                 nearest = card;
-                Debug.Log("CardUI detected under mouse: " + card.name);
-                break; // 첫 번째 = 가장 앞에 있는 카드
+                break;
             }
         }
 

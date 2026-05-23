@@ -67,8 +67,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 0da6f36aefb08534d94f1cd3060f2be0, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -94,6 +94,8 @@ MonoBehaviour:
   animSpeed: 10
   cardImage: {fileID: 0}
   hoverColor: {r: 1, g: 0.9, b: 0.5, a: 1}
+  cardType: 0
+  bIsHover: 0
 --- !u!1 &1934062189243274493
 GameObject:
   m_ObjectHideFlags: 0

@@ -20,7 +20,24 @@ public class GameInputManager : MonoBehaviour
         {
             AddCardToHand();
         }
+
+         if (Input.GetKeyDown(KeyCode.B))
+        {
+            RemoveCardFromHand();
+        }
     }
+    private void RemoveCardFromHand()
+    {
+        // 자식이 없으면 패스
+    if (handPanel.childCount == 0) return;
+
+    // 마지막 카드 삭제
+    GameObject lastCard = handPanel.GetChild(handPanel.childCount - 1).gameObject;
+    Destroy(lastCard);
+    handLayoutManager.UpdateLayout();
+    }
+
+
 
     private void AddCardToHand()
     {
