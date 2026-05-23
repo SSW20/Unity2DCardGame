@@ -1,6 +1,11 @@
 using UnityEngine;
 using UnityEngine.UI;
-
+public enum CardType
+{
+    Hand,    // 손패
+    Special, // 특전
+    Field    // 필드
+}
 public class CardUI : MonoBehaviour
 {
     [Header("Card Animation")]
@@ -13,6 +18,9 @@ public class CardUI : MonoBehaviour
     [Header("Highlight")]
     [SerializeField] private Image cardImage;
     [SerializeField] private Color hoverColor = new Color(1f, 0.9f, 0.5f);
+
+    [Header("Card Type")]
+    [SerializeField] private CardType cardType;
 
     private Vector3 originalScale;
     private Vector3 targetScale;
@@ -57,14 +65,20 @@ public class CardUI : MonoBehaviour
         {
             targetScale = originalScale * hoverScale;
             // cardImage.color = hoverColor;
-            transform.SetAsLastSibling();
+            if(cardType == CardType.Hand)
+            {
+              transform.SetAsLastSibling();
+            }
         }
         else
         {
             targetScale = originalScale;
             // cardImage.color = originalColor;
             // cardCanvas.sortingOrder = 0; 
-            transform.SetSiblingIndex(originalIndex);
+            if(cardType == CardType.Hand)
+            {
+              transform.SetSiblingIndex(originalIndex);
+            }
         }
     }
 }

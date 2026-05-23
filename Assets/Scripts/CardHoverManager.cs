@@ -1,5 +1,6 @@
 using UnityEngine;
-
+using UnityEngine.EventSystems;
+using System.Collections.Generic;
 public class HandHoverManager : MonoBehaviour
 {
     private CardUI[] cards;
@@ -12,7 +13,27 @@ public class HandHoverManager : MonoBehaviour
 
     void Update()
     {
-        CardUI nearest = GetNearestCardUnderMouse();
+                // 마우스 아래 UI 오브젝트 감지
+        PointerEventData pointerData = new PointerEventData(EventSystem.current)
+        {
+            position = Input.mousePosition
+        };
+
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, results);
+
+        // 감지된 것 중 CardUI 있는지 확인
+        CardUI nearest = null;
+        foreach (RaycastResult result in results)
+        {
+            CardUI card = result.gameObject.GetComponent<CardUI>();
+            if (card != null)
+            {
+                nearest = card;
+                Debug.Log("CardUI detected under mouse: " + card.name);
+                break; // 첫 번째 = 가장 앞에 있는 카드
+            }
+        }
 
         if (nearest == currentHovered) return;
 
@@ -24,14 +45,13 @@ public class HandHoverManager : MonoBehaviour
         if (currentHovered != null)
             currentHovered.SetHover(true);
 
-        Debug.Log(currentHovered != null ? $"Hovering: {currentHovered.name}" : "Not hovering any card");
     }
 
     private CardUI GetNearestCardUnderMouse()
     {
             Vector2 mousePos = Input.mousePosition;
             CardUI nearest = null;
-            float minDist = 60f; // 이 거리 안에 있어야 호버 인정 (값 조절 가능)
+            float minDist = 30f; 
 
     foreach (CardUI card in cards)
     {
