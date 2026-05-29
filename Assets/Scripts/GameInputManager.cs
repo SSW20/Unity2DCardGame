@@ -63,7 +63,7 @@ public class GameInputManager : MonoBehaviour
 
             Sequence seq = DOTween.Sequence();
             seq.Append(lastCard.transform.DOScale(Vector3.zero, 0.3f));
-            seq.Join(lastCard.transform.DOMove(graveyardPanel.position, 0.3f).SetEase(Ease.InCubic));
+            seq.Join(lastCard.transform.DOMove(deckPanel.position, 0.3f).SetEase(Ease.InCubic));
             seq.AppendCallback(() => Destroy(lastCard));
 
             handLayoutManager.UpdateLayout();
