@@ -15,6 +15,7 @@ public class CardUI : MonoBehaviour
     [SerializeField] private float hoverScale = 1.3f;
     [SerializeField] private float animSpeed = 10f;
     [SerializeField] private float yOffset = 40f;
+    [SerializeField] public bool isAnimation = false;
 
     [Header("Highlight")]
     [SerializeField] private Image cardImage;

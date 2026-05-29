@@ -1,13 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 public class GameInputManager : MonoBehaviour
 {
     [SerializeField] private GameObject cardPrefab;
     [SerializeField] private Transform handPanel;
+    [SerializeField] private Transform deckPanel;
+    [SerializeField] private Transform graveyardPanel;
+
     [SerializeField] private HandLayoutManager handLayoutManager;
     [SerializeField] private GameOverPannel gameOverPannel;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -38,13 +43,22 @@ public class GameInputManager : MonoBehaviour
     }
     private void RemoveCardFromHand()
     {
-        // 자식이 없으면 패스
-    if (handPanel.childCount == 0) return;
+        for (int i = handPanel.childCount - 1; i >= handPanel.childCount - 5; i--)
+        {
+            if (i < 0) break;
+            // 자식이 없으면 패스
+            if (handPanel.childCount == 0) return;
 
-    // 마지막 카드 삭제
-    GameObject lastCard = handPanel.GetChild(handPanel.childCount - 1).gameObject;
-    Destroy(lastCard);
-    handLayoutManager.UpdateLayout();
+            GameObject lastCard = handPanel.GetChild(i).gameObject;
+            lastCard.GetComponent<CardUI>().isAnimation = true;
+
+            Sequence seq = DOTween.Sequence();
+            seq.Append(lastCard.transform.DOScale(Vector3.zero, 0.3f));
+            seq.Join(lastCard.transform.DOMove(graveyardPanel.position, 0.3f).SetEase(Ease.InCubic));
+            seq.AppendCallback(() => Destroy(lastCard));
+
+            handLayoutManager.UpdateLayout();
+        }
     }
 
 
@@ -52,6 +66,11 @@ public class GameInputManager : MonoBehaviour
     private void AddCardToHand()
     {
         GameObject newCard = Instantiate(cardPrefab, handPanel.transform);
+
+
+        newCard.transform.position = deckPanel.position;
+        newCard.transform.localScale = Vector3.one;
+
         handLayoutManager.UpdateLayout();
     }
 
