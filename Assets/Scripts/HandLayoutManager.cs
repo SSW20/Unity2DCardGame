@@ -21,7 +21,7 @@ public class HandLayoutManager : MonoBehaviour
 
     void Update()
     {
-        CheckHandHovered();
+        
     }
 
     // Update() 제거 — 매 프레임 재계산 안함
@@ -50,22 +50,6 @@ public class HandLayoutManager : MonoBehaviour
             }
             cards[i].localPosition = new Vector3(x, y + HoverLift, 0);
             cards[i].localRotation = Quaternion.Euler(0, 0, angle);
-        }
-    }
-
-    public void CheckHandHovered()
-    {
-        foreach (RectTransform card in cards)
-        {
-            CardUI cardUI = card.GetComponent<CardUI>();
-            if (cardUI != null)
-            {
-                if (cardUI.bIsHover && cardUI.cardType == CardType.Hand)
-                {
-                    UpdateLayout(hoverLift);
-                    break;
-                }
-            }
         }
     }
 }

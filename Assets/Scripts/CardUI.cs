@@ -14,6 +14,7 @@ public class CardUI : MonoBehaviour
     [Header("Scale")]
     [SerializeField] private float hoverScale = 1.3f;
     [SerializeField] private float animSpeed = 10f;
+    [SerializeField] private float yOffset = 40f;
 
     [Header("Highlight")]
     [SerializeField] private Image cardImage;
@@ -28,6 +29,8 @@ public class CardUI : MonoBehaviour
     private Color originalColor;
 
     private int originalIndex;
+
+    private Quaternion originalRotation;
 
     // private Canvas cardCanvas;
 
@@ -64,12 +67,14 @@ public class CardUI : MonoBehaviour
 
         if (isHover)
         {
+            originalRotation = transform.localRotation;
             targetScale = originalScale * hoverScale;
             // cardImage.color = hoverColor;
-            // if(cardType == CardType.Hand)
-            // {
-            //   transform.SetAsLastSibling();
-            // }
+            if(cardType == CardType.Hand)
+            {
+              transform.SetLocalPositionAndRotation(transform.localPosition + Vector3.up * yOffset, Quaternion.identity);
+              transform.SetSiblingIndex(100); // 최상위로 이동
+            }
             bIsHover = true;
         }
         else
@@ -77,10 +82,11 @@ public class CardUI : MonoBehaviour
             targetScale = originalScale;
             // cardImage.color = originalColor;
             // cardCanvas.sortingOrder = 0; 
-            // if(cardType == CardType.Hand)
-            // {
-            //   transform.SetSiblingIndex(originalIndex);
-            // }
+            if(cardType == CardType.Hand)
+            {
+              transform.SetLocalPositionAndRotation(transform.localPosition - Vector3.up * yOffset, originalRotation);
+              transform.SetSiblingIndex(originalIndex); // 원래 위치로 복원
+            }
             bIsHover = false;
         }
     }

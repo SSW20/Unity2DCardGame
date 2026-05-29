@@ -92,6 +92,7 @@ MonoBehaviour:
   UseAnimation: 1
   hoverScale: 1.5
   animSpeed: 10
+  yOffset: 100
   cardImage: {fileID: 0}
   hoverColor: {r: 1, g: 0.9, b: 0.5, a: 1}
   cardType: 0

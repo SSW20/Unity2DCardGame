@@ -6,6 +6,8 @@ public class HandHoverManager : MonoBehaviour
     private CardUI[] cards;
     private CardUI currentHovered;
 
+    private float enterDist = 60f;
+    private float exitDist = 90f;
     void Start()
     {
         cards = FindObjectsOfType<CardUI>();
@@ -50,7 +52,7 @@ public class HandHoverManager : MonoBehaviour
     {
             Vector2 mousePos = Input.mousePosition;
             CardUI nearest = null;
-            float minDist = 30f; 
+            float minDist = float.MaxValue; 
 
     foreach (CardUI card in cards)
     {
@@ -60,8 +62,8 @@ public class HandHoverManager : MonoBehaviour
         );
 
         float dist = Vector2.Distance(mousePos, cardScreenPos);
-
-        if (dist < minDist)
+        float threshold = card.bIsHover ? exitDist : enterDist;
+        if (dist < minDist && threshold < minDist)
         {
             minDist = dist;
             nearest = card;

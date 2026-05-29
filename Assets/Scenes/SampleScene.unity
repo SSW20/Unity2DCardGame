@@ -1995,7 +1995,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 531786068}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1896592139}
+        m_TargetAssemblyTypeName: GameInputManager, Assembly-CSharp
+        m_MethodName: ButtonClicked
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &531786068
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2048,19 +2060,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   onButtonClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 11500000, guid: d721283057a633649b246de13cd3fddb, type: 3}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   pressedColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
 --- !u!1001 &552306414
@@ -3308,7 +3308,6 @@ GameObject:
   - component: {fileID: 1175034871}
   - component: {fileID: 1175034870}
   - component: {fileID: 1175034869}
-  - component: {fileID: 1175034873}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -3405,21 +3404,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &1175034873
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1175034868}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d721283057a633649b246de13cd3fddb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cardPrefab: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
-  handPanel: {fileID: 2051791735}
-  handLayoutManager: {fileID: 2051791738}
 --- !u!1 &1181383357
 GameObject:
   m_ObjectHideFlags: 0
@@ -5300,7 +5284,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1767393213}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1896592139}
+        m_TargetAssemblyTypeName: GameInputManager, Assembly-CSharp
+        m_MethodName: ButtonClicked
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1767393213
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5874,6 +5870,7 @@ MonoBehaviour:
   cardImage: {fileID: 0}
   hoverColor: {r: 1, g: 0.9, b: 0.5, a: 1}
   cardType: 0
+  bIsHover: 0
 --- !u!1001 &1977377190
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6043,6 +6040,7 @@ MonoBehaviour:
   cardSpacing: 80
   maxAngle: 20
   arcHeight: 30
+  hoverLift: 20
 --- !u!114 &2051791739
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6061,6 +6059,7 @@ MonoBehaviour:
   cardImage: {fileID: 0}
   hoverColor: {r: 1, g: 0.9, b: 0.5, a: 1}
   cardType: 0
+  bIsHover: 0
 --- !u!114 &2051791740
 MonoBehaviour:
   m_ObjectHideFlags: 0
