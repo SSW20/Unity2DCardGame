@@ -7,6 +7,7 @@ public class GameInputManager : MonoBehaviour
     [SerializeField] private GameObject cardPrefab;
     [SerializeField] private Transform handPanel;
     [SerializeField] private HandLayoutManager handLayoutManager;
+    [SerializeField] private GameOverPannel gameOverPannel;
     // Start is called before the first frame update
     void Start()
     {
@@ -24,6 +25,15 @@ public class GameInputManager : MonoBehaviour
          if (Input.GetKeyDown(KeyCode.B))
         {
             RemoveCardFromHand();
+        }
+
+         if (Input.GetKeyDown(KeyCode.G))
+         {
+             gameOverPannel.Show();
+         }
+         if(Input.GetKeyDown(KeyCode.H))
+        {
+            gameOverPannel.Hide();
         }
     }
     private void RemoveCardFromHand()
