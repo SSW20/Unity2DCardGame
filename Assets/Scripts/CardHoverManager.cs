@@ -6,8 +6,8 @@ public class HandHoverManager : MonoBehaviour
     private CardUI[] cards;
     private CardUI currentHovered;
 
-    private float enterDist = 60f;
-    private float exitDist = 90f;
+    private float enterDist = 40f;
+    private float exitDist = 150f;
     void Start()
     {
         cards = FindObjectsOfType<CardUI>();
