@@ -16,7 +16,16 @@ public class GameInputManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        StartCoroutine(DrawCards());
+    }
+
+    private IEnumerator DrawCards(int count = 5)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            AddCardToHand();
+            yield return new WaitForSeconds(0.1f); // 0.1초 딜레이
+        }
     }
 
     // Update is called once per frame
