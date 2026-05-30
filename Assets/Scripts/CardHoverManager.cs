@@ -10,6 +10,8 @@ public class CardHoverManager : MonoBehaviour
     private float enterDist = 40f;
     private float exitDist = 150f;
 
+    [SerializeField] private SpecialSelectPanel specialSelectPanel;
+
     void Start()
     {
         // Hand 타입 카드만 따로 저장 (거리 기반 처리용)
@@ -49,6 +51,12 @@ public class CardHoverManager : MonoBehaviour
         {
             nearest = GetNearestHandCard();
         }
+          if (specialSelectPanel.isActive)
+        {
+            nearest = null;
+            hitHandCards.Clear();
+        }
+
 
         if (nearest == currentHovered) return;
 
@@ -59,6 +67,7 @@ public class CardHoverManager : MonoBehaviour
 
         if (currentHovered != null)
             currentHovered.SetHover(true);
+
     }
 
     private CardUI GetNearestHandCard()

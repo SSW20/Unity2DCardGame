@@ -13,6 +13,8 @@ public class GameInputManager : MonoBehaviour
     [SerializeField] private HandLayoutManager handLayoutManager;
     [SerializeField] private GameOverPannel gameOverPannel;
 
+    [SerializeField] private SpecialSelectPanel specialSelectPanel;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -49,6 +51,11 @@ public class GameInputManager : MonoBehaviour
         {
             gameOverPannel.Hide();
         }
+        if (Input.GetKeyDown(KeyCode.T))
+            specialSelectPanel.Show();
+
+        if (Input.GetKeyDown(KeyCode.Y))
+            specialSelectPanel.Hide();
     }
     private void RemoveCardFromHand()
     {
