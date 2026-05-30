@@ -4,7 +4,8 @@ public enum CardType
 {
     Hand,    // 손패
     Special, // 특전
-    Field    // 필드
+    Field,    // 필드
+    Deck,     // 덱
 }
 public class CardUI : MonoBehaviour
 {
@@ -64,7 +65,7 @@ public class CardUI : MonoBehaviour
     // HandHoverManager가 직접 호출
     public void SetHover(bool isHover)
     {
-        if (!UseAnimation) return;
+        if (!UseAnimation || cardType == CardType.Deck) return;
 
         if (isHover)
         {
