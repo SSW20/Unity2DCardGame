@@ -1,0 +1,98 @@
+using UnityEngine;
+using UnityEngine.EventSystems;
+using System.Collections.Generic;
+
+public class CardHoverManager : MonoBehaviour
+{
+    private CardUI currentHovered;
+    private List<CardUI> hitHandCards = new List<CardUI>();
+
+    private float enterDist = 40f;
+    private float exitDist = 150f;
+
+    [SerializeField] private SpecialSelectPanel specialSelectPanel;
+
+    void Start()
+    {
+        // Hand 타입 카드만 따로 저장 (거리 기반 처리용)
+        var all = FindObjectsOfType<CardUI>();
+    }
+
+    void Update()
+    {
+        PointerEventData pointerData = new PointerEventData(EventSystem.current)
+        {
+            position = Input.mousePosition
+        };
+
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, results);
+
+        CardUI nearest = null;
+
+        foreach (RaycastResult result in results)
+        {
+            CardUI card = result.gameObject.GetComponent<CardUI>();
+            if (card == null) continue;
+
+            if (card.cardType != CardType.Hand)
+            {
+                nearest = card;
+                hitHandCards.Clear();
+                break;
+            }
+            else
+            {
+               hitHandCards.Add(card);
+            }
+        }
+
+        if(hitHandCards.Count > 0)
+        {
+            nearest = GetNearestHandCard();
+        }
+          if (specialSelectPanel.isActive)
+        {
+            nearest = null;
+            hitHandCards.Clear();
+        }
+
+
+        if (nearest == currentHovered) return;
+
+        if (currentHovered != null)
+            currentHovered.SetHover(false);
+
+        currentHovered = nearest;
+
+        if (currentHovered != null)
+            currentHovered.SetHover(true);
+
+    }
+
+    private CardUI GetNearestHandCard()
+    {
+        Vector2 mousePos = Input.mousePosition;
+        CardUI nearest = null;
+        float minDist = float.MaxValue;
+
+        foreach (CardUI card in hitHandCards)
+        {
+            Vector2 cardScreenPos = RectTransformUtility.WorldToScreenPoint(
+                null,
+                card.transform.position
+            );
+
+            float dist = Vector2.Distance(mousePos, cardScreenPos);
+            float threshold = card.bIsHover ? exitDist : enterDist;
+
+            if (dist < threshold && dist < minDist)
+            {
+                minDist = dist;
+                nearest = card;
+            }
+        }
+
+        return nearest;
+    }
+}
