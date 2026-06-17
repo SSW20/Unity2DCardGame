@@ -3,6 +3,8 @@ using UnityEngine;
 public class CardSlot : MonoBehaviour
 {
     public bool IsOccupied { get; private set; }
+    public RectTransform RectTransform => (RectTransform)transform;
+
     private GameObject currentCard;
 
     public void SetCard(GameObject card)

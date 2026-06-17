@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 public enum CardType
 {
@@ -7,9 +8,9 @@ public enum CardType
     Field,    // 필드
     Deck,     // 덱
 }
-public class CardUI : MonoBehaviour
+public class CardUI : MonoBehaviour, IPointerClickHandler
 {
-    [Header("Card Animation")]
+        [Header("Card Animation")]
     [SerializeField] private bool UseAnimation = true;
 
     [Header("Scale")]
@@ -25,14 +26,26 @@ public class CardUI : MonoBehaviour
     [Header("Card Type")]
     [SerializeField] public CardType cardType;
 
+    [Header("Special Card Data")]
+    public string cardName;
+    [TextArea] public string cardDescription;
+    public System.Action<CardUI> onClicked;
+
     public bool bIsHover = false;
     private Vector3 originalScale;
     private Vector3 targetScale;
     private Color originalColor;
 
     private int originalIndex;
-
     private Quaternion originalRotation;
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (cardType == CardType.Special)
+        {
+            onClicked?.Invoke(this);
+        }
+    }
 
     // private Canvas cardCanvas;
 

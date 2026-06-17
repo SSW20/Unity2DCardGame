@@ -51,7 +51,7 @@ public class CardHoverManager : MonoBehaviour
         {
             nearest = GetNearestHandCard();
         }
-          if (specialSelectPanel.isActive)
+        if (specialSelectPanel.isActive)
         {
             nearest = null;
             hitHandCards.Clear();
