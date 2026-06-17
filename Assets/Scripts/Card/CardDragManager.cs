@@ -1,0 +1,99 @@
+using UnityEngine;
+using UnityEngine.EventSystems;
+using System.Collections.Generic;
+
+public class CardDragManager : MonoBehaviour,
+    IBeginDragHandler, IDragHandler, IEndDragHandler
+{
+    private RectTransform rectTransform;
+    private Canvas canvas;
+    private CanvasGroup canvasGroup;
+
+    private Transform originalParent;
+    private Vector3 originalPosition;
+    private int originalSiblingIndex;
+    private HandLayoutManager handLayoutManager;
+
+    void Awake()
+    {
+        rectTransform = GetComponent<RectTransform>();
+        canvas = GetComponentInParent<Canvas>();
+
+        canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+    }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        originalParent = transform.parent;
+        originalPosition = rectTransform.position;
+        originalSiblingIndex = transform.GetSiblingIndex();
+
+        // 원래 부모(HandPanel)에서 HandLayoutManager 찾아두기
+        handLayoutManager = originalParent.GetComponent<HandLayoutManager>();
+
+        canvasGroup.blocksRaycasts = false;
+
+        transform.SetParent(canvas.transform, true);
+        transform.SetAsLastSibling();
+
+        rectTransform.position = eventData.position;
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        rectTransform.position = eventData.position;
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        canvasGroup.blocksRaycasts = true;
+
+        CardSlot targetSlot = GetSlotUnderPointer(eventData);
+
+        if (targetSlot != null && !targetSlot.IsOccupied)
+        {
+            // 슬롯에 배치
+            transform.SetParent(targetSlot.transform, false);
+            rectTransform.anchoredPosition = Vector2.zero;
+            rectTransform.localRotation = Quaternion.identity;
+            rectTransform.localScale = Vector3.one;
+            targetSlot.SetCard(gameObject);
+
+            CardUI cardUI = GetComponent<CardUI>();
+            if (cardUI != null)
+            {
+                cardUI.cardType = CardType.Field;
+                cardUI.SetHover(false);
+            }
+
+            // 더 이상 드래그 안 되게
+            this.enabled = false;
+
+            // 손패 재정렬
+            if (handLayoutManager != null)
+                handLayoutManager.UpdateLayout();
+        }
+        else
+        {
+            // 원래 자리로 복귀
+            transform.SetParent(originalParent, false);
+            transform.SetSiblingIndex(originalSiblingIndex);
+            rectTransform.position = originalPosition;
+        }
+    }
+
+    private CardSlot GetSlotUnderPointer(PointerEventData eventData)
+    {
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, results);
+
+        foreach (var result in results)
+        {
+            CardSlot slot = result.gameObject.GetComponent<CardSlot>();
+            if (slot != null) return slot;
+        }
+        return null;
+    }
+}
