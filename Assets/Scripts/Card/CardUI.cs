@@ -78,7 +78,7 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
     // HandHoverManager가 직접 호출
     public void SetHover(bool isHover)
     {
-        if (!UseAnimation || cardType == CardType.Deck) return;
+        if (!UseAnimation || cardType == CardType.Deck || cardType == CardType.Special) return;
 
         if (isHover)
         {

@@ -60,18 +60,18 @@ public class SpecialSelectPanel : MonoBehaviour
             GameObject placedCard = Instantiate(selected.gameObject, emptySlot.transform);
 
             RectTransform rt = placedCard.GetComponent<RectTransform>();
-RectTransform slotRt = emptySlot.RectTransform;
+            RectTransform slotRt = emptySlot.RectTransform;
 
 
-rt.anchorMin = new Vector2(0.5f, 0.5f);
-rt.anchorMax = new Vector2(0.5f, 0.5f);
-rt.pivot = new Vector2(0.5f, 0.5f);
-rt.anchoredPosition = Vector2.zero;
-rt.localRotation = Quaternion.identity;
-rt.localScale = Vector3.one;
+            rt.anchorMin = new Vector2(0.5f, 0.5f);
+            rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = Vector2.zero;
+            rt.localRotation = Quaternion.identity;
+            rt.localScale = Vector3.one;
 
             CardUI placedUI = placedCard.GetComponent<CardUI>();
-            placedUI.cardType = CardType.Field;
+            placedUI.cardType = CardType.Special;
             placedUI.onClicked = null;
 
             emptySlot.SetCard(placedCard);
