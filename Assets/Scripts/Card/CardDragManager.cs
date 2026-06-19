@@ -14,6 +14,8 @@ public class CardDragManager : MonoBehaviour,
     private int originalSiblingIndex;
     private HandLayoutManager handLayoutManager;
 
+
+
     void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -32,6 +34,15 @@ public class CardDragManager : MonoBehaviour,
 
         // 원래 부모(HandPanel)에서 HandLayoutManager 찾아두기
         handLayoutManager = originalParent.GetComponent<HandLayoutManager>();
+        CardUI cardUI = GetComponent<CardUI>();
+        if (cardUI != null)
+        {
+            cardUI.isDragging = true;
+            cardUI.SetHover(false);        // 드래그 시작 시 자기 자신 호버 강제 해제
+            // cardUI.SetScaleImmediate();
+        }
+
+
 
         canvasGroup.blocksRaycasts = false;
 
@@ -39,6 +50,7 @@ public class CardDragManager : MonoBehaviour,
         transform.SetAsLastSibling();
 
         rectTransform.position = eventData.position;
+        rectTransform.localRotation = Quaternion.identity;
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -80,7 +92,8 @@ public class CardDragManager : MonoBehaviour,
             transform.SetParent(originalParent, false);
             transform.SetSiblingIndex(originalSiblingIndex);
             rectTransform.position = originalPosition;
-            rectTransform.localRotation = Quaternion.identity;
+            if (handLayoutManager != null)
+                handLayoutManager.UpdateLayout(); 
         }
     }
 

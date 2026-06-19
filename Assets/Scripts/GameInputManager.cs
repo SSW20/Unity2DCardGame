@@ -16,6 +16,7 @@ public class GameInputManager : MonoBehaviour
 
     [SerializeField] private SpecialSelectPanel specialSelectPanel;
 
+
     // Start is called before the first frame update
     void Start()
     {

@@ -34,6 +34,7 @@ public class CardHoverManager : MonoBehaviour
         {
             CardUI card = result.gameObject.GetComponent<CardUI>();
             if (card == null) continue;
+            if (card.isDragging) continue;
 
             if (card.cardType != CardType.Hand)
             {
@@ -99,5 +100,5 @@ public class CardHoverManager : MonoBehaviour
         }
 
         return nearest;
-    }
+    } 
 }

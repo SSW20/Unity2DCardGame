@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using DG.Tweening;
+
 public enum CardType
 {
     Hand,    // 손패
@@ -10,7 +12,7 @@ public enum CardType
 }
 public class CardUI : MonoBehaviour, IPointerClickHandler
 {
-        [Header("Card Animation")]
+    [Header("Card Animation")]
     [SerializeField] private bool UseAnimation = true;
 
     [Header("Scale")]
@@ -36,8 +38,12 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
     private Vector3 targetScale;
     private Color originalColor;
 
+    public Vector3 homeLocalPosition;
+    public Quaternion homeLocalRotation;
+
+    public bool isDragging = false;
+
     private int originalIndex;
-    private Quaternion originalRotation;
 
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -82,7 +88,7 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
 
         if (isHover)
         {
-            originalRotation = transform.localRotation;
+            transform.DOKill(true);   
             targetScale = originalScale * hoverScale;
             // cardImage.color = hoverColor;
             if(cardType == CardType.Hand)
@@ -99,10 +105,12 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
             // cardCanvas.sortingOrder = 0; 
             if(cardType == CardType.Hand)
             {
-              transform.SetLocalPositionAndRotation(transform.localPosition - Vector3.up * yOffset, originalRotation);
+              transform.SetLocalPositionAndRotation(homeLocalPosition, homeLocalRotation);
               transform.SetSiblingIndex(originalIndex); // 원래 위치로 복원
             }
             bIsHover = false;
         }
     }
+
 }
+
