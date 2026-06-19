@@ -11,6 +11,8 @@ public class CardDragManager : MonoBehaviour,
 
     private Transform originalParent;
     private Vector3 originalPosition;
+
+    private Quaternion originalRotation;
     private int originalSiblingIndex;
     private HandLayoutManager handLayoutManager;
 
@@ -28,10 +30,12 @@ public class CardDragManager : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        
         originalParent = transform.parent;
         originalPosition = rectTransform.position;
         originalSiblingIndex = transform.GetSiblingIndex();
-
+        originalRotation = rectTransform.localRotation;
+        Debug.Log("드래그 시작: " + originalPosition + ", " + originalRotation);
         // 원래 부모(HandPanel)에서 HandLayoutManager 찾아두기
         handLayoutManager = originalParent.GetComponent<HandLayoutManager>();
         CardUI cardUI = GetComponent<CardUI>();
@@ -62,6 +66,7 @@ public class CardDragManager : MonoBehaviour,
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        Debug.Log("드래그 종료: " + gameObject.transform.name);
         canvasGroup.blocksRaycasts = true;
 
         CardSlot targetSlot = GetSlotUnderPointer(eventData);
@@ -90,11 +95,15 @@ public class CardDragManager : MonoBehaviour,
         }
         else
         {
-            transform.SetParent(originalParent, false);
+            transform.SetParent(originalParent, true);
             transform.SetSiblingIndex(originalSiblingIndex);
-            rectTransform.position = originalPosition;
+
+            rectTransform.localPosition = cardUI.homeLocalPosition;   // 월드 좌표 변환 없이 local로 직접
+            rectTransform.localRotation = cardUI.homeLocalRotation;
+
             // if (handLayoutManager != null)
             //     handLayoutManager.UpdateLayout(); 
+            Debug.Log("드래그 종료: " + cardUI.isDragging);
         }
     }
 

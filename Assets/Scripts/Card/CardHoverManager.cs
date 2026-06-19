@@ -35,8 +35,9 @@ public class CardHoverManager : MonoBehaviour
             CardUI card = result.gameObject.GetComponent<CardUI>();
             if (card == null) continue;
             if (card.isDragging) continue;
+            if (card.cardType == CardType.Field || card.cardType == CardType.Deck) continue;
 
-            if (card.cardType != CardType.Hand)
+            if (card.cardType == CardType.Special)
             {
                 nearest = card;
                 hitHandCards.Clear();
