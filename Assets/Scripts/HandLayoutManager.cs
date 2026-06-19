@@ -37,7 +37,7 @@ public class HandLayoutManager : MonoBehaviour
             if (cardUI != null && cardUI.isAnimation) continue; 
             cards.Add(child);
         }
-           
+   
         
         int count = cards.Count;
         if (count == 0) return;
@@ -58,7 +58,8 @@ public class HandLayoutManager : MonoBehaviour
                 // 호버 중이어도 "정답 위치"는 항상 최신으로 갱신
                 cardUI.homeLocalPosition = targetPos;
                 cardUI.homeLocalRotation = targetRot;
-
+                cardUI.homeSiblingIndex = i;
+                
                 if (cardUI.bIsHover) continue;   // 호버 중인 카드는 트윈으로 안 끌어당김
             }
 

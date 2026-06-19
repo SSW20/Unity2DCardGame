@@ -41,6 +41,8 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
     public Vector3 homeLocalPosition;
     public Quaternion homeLocalRotation;
 
+    public int homeSiblingIndex; 
+
     public bool isDragging = false;
 
     private int originalIndex;
@@ -106,7 +108,8 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
             if(cardType == CardType.Hand)
             {
               transform.SetLocalPositionAndRotation(homeLocalPosition, homeLocalRotation);
-              transform.SetSiblingIndex(originalIndex); // 원래 위치로 복원
+            //   transform.SetSiblingIndex(originalIndex); // 원래 위치로 복원
+              transform.SetSiblingIndex(homeSiblingIndex);
             }
             bIsHover = false;
         }

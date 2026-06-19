@@ -51,6 +51,8 @@ public class CardDragManager : MonoBehaviour,
 
         rectTransform.position = eventData.position;
         rectTransform.localRotation = Quaternion.identity;
+
+        // handLayoutManager.UpdateLayout(); // 손패 재정렬
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -88,12 +90,11 @@ public class CardDragManager : MonoBehaviour,
         }
         else
         {
-            // 원래 자리로 복귀
             transform.SetParent(originalParent, false);
             transform.SetSiblingIndex(originalSiblingIndex);
             rectTransform.position = originalPosition;
-            if (handLayoutManager != null)
-                handLayoutManager.UpdateLayout(); 
+            // if (handLayoutManager != null)
+            //     handLayoutManager.UpdateLayout(); 
         }
     }
 
