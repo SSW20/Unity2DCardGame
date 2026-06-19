@@ -32,11 +32,11 @@ public class SpecialSelectPanel : MonoBehaviour
             cardUI.cardDescription = option.desc;
             cardUI.onClicked = OnCardSelected;
 
+            // 특전 카드이니 드래그 할 수 없도록 DragManager 제거
             CardDragManager dragManager = card.GetComponent<CardDragManager>();
             if (dragManager != null)
             {
-                
-            Destroy(dragManager);
+                Destroy(dragManager);
             }
         }
 
@@ -60,9 +60,6 @@ public class SpecialSelectPanel : MonoBehaviour
             GameObject placedCard = Instantiate(selected.gameObject, emptySlot.transform);
 
             RectTransform rt = placedCard.GetComponent<RectTransform>();
-            RectTransform slotRt = emptySlot.RectTransform;
-
-
             rt.anchorMin = new Vector2(0.5f, 0.5f);
             rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot = new Vector2(0.5f, 0.5f);

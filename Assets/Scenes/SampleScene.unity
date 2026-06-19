@@ -5923,7 +5923,7 @@ MonoBehaviour:
   cardSpacing: 80
   maxAngle: 20
   arcHeight: 30
-  moveDuration: 0.3
+  moveDuration: 0.1
 --- !u!114 &2051791739
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5949,6 +5949,8 @@ MonoBehaviour:
   bIsHover: 0
   homeLocalPosition: {x: 0, y: 0, z: 0}
   homeLocalRotation: {x: 0, y: 0, z: 0, w: 0}
+  homeSiblingIndex: 0
+  isDragging: 0
 --- !u!1 &2108056022
 GameObject:
   m_ObjectHideFlags: 0
