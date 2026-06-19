@@ -51,8 +51,8 @@ public class CardDragManager : MonoBehaviour,
         canvasGroup.blocksRaycasts = true;
 
         CardSlot targetSlot = GetSlotUnderPointer(eventData);
-
-        if (targetSlot != null && !targetSlot.IsOccupied)
+        CardUI cardUI = GetComponent<CardUI>();
+        if (targetSlot != null && targetSlot.CanAcceptDrag(cardUI))
         {
             // 슬롯에 배치
             transform.SetParent(targetSlot.transform, false);
@@ -61,7 +61,6 @@ public class CardDragManager : MonoBehaviour,
             rectTransform.localScale = Vector3.one;
             targetSlot.SetCard(gameObject);
 
-            CardUI cardUI = GetComponent<CardUI>();
             if (cardUI != null)
             {
                 cardUI.cardType = CardType.Field;
@@ -81,6 +80,7 @@ public class CardDragManager : MonoBehaviour,
             transform.SetParent(originalParent, false);
             transform.SetSiblingIndex(originalSiblingIndex);
             rectTransform.position = originalPosition;
+            rectTransform.localRotation = Quaternion.identity;
         }
     }
 
