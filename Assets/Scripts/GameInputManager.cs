@@ -16,6 +16,8 @@ public class GameInputManager : MonoBehaviour
 
     [SerializeField] private SpecialSelectPanel specialSelectPanel;
 
+    [SerializeField] private CardManager cardManager;
+
 
     // Start is called before the first frame update
     void Start()
@@ -28,6 +30,7 @@ public class GameInputManager : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             AddCardToHand();
+            cardManager.DrawCard(cardManager.pokerDeck);
             yield return new WaitForSeconds(0.1f); // 0.1초 딜레이
         }
     }
@@ -38,13 +41,13 @@ public class GameInputManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.V))
         {
-            AddCardToHand();
+            StartCoroutine(DrawCards());
         }
 
-         if (Input.GetKeyDown(KeyCode.B))
-        {
-            RemoveCardFromHand();
-        }
+        //  if (Input.GetKeyDown(KeyCode.B))
+        // {
+        //     RemoveCardFromHand();
+        // }
 
          if (Input.GetKeyDown(KeyCode.G))
          {
@@ -71,22 +74,21 @@ public class GameInputManager : MonoBehaviour
     }
     private void RemoveCardFromHand()
     {
-        for (int i = handPanel.childCount - 1; i >= handPanel.childCount - 5; i--)
+        foreach (Transform child in handPanel)
         {
-            if (i < 0) break;
-            // 자식이 없으면 패스
-            if (handPanel.childCount == 0) return;
+            GameObject card = child.gameObject;
 
-            GameObject lastCard = handPanel.GetChild(i).gameObject;
-            lastCard.GetComponent<CardUI>().isAnimation = true;
+            CardUI cardUI = card.GetComponent<CardUI>();
+            if (cardUI != null)
+                cardUI.isAnimation = true;
 
             Sequence seq = DOTween.Sequence();
-            seq.Append(lastCard.transform.DOScale(Vector3.zero, 0.3f));
-            seq.Join(lastCard.transform.DOMove(deckPanel.position, 0.3f).SetEase(Ease.InCubic));
-            seq.AppendCallback(() => Destroy(lastCard));
-
-            handLayoutManager.UpdateLayout();
+            seq.Append(card.transform.DOScale(Vector3.zero, 0.3f));
+            seq.Join(card.transform.DOMove(deckPanel.position, 0.3f).SetEase(Ease.InCubic));
+            seq.AppendCallback(() => Destroy(card));
         }
+        cardManager.RemoveCardAll(cardManager.pokerDeck);
+
     }
 
 
@@ -94,8 +96,6 @@ public class GameInputManager : MonoBehaviour
     private void AddCardToHand()
     {
         GameObject newCard = Instantiate(cardPrefab, handPanel.transform);
-
-
         newCard.transform.position = deckPanel.position;
         newCard.transform.localScale = Vector3.one;
 
@@ -105,5 +105,12 @@ public class GameInputManager : MonoBehaviour
     public void ButtonClicked()
     {
         Debug.Log("Button was clicked!");
+    }
+
+    public void OnTurnEnd()
+    {
+        RemoveCardFromHand();
+
+        cardManager.RemoveCardAll(cardManager.pokerDeck);
     }
 }

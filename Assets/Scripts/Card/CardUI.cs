@@ -27,6 +27,7 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
 
     [Header("Card Type")]
     [SerializeField] public CardType cardType;
+    
 
     [Header("Special Card Data")]
     public string cardName;

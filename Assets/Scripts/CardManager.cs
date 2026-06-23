@@ -16,33 +16,18 @@ public struct PokerCard
         this.suit = suit;
         this.rank = rank;
     }
-
-    public override string ToString()
-    {
-        return $"{suit}_{rank}";
-    }
 }
 
-public class DeckManager : MonoBehaviour
+public class CardManager : MonoBehaviour
 {
     public List<PokerCard> pokerDeck = new List<PokerCard>();
     public List<PokerCard> playerHand = new List<PokerCard>();
-
-    void Start()
+    void Awake()
     {
         GeneratePokerDeck();
-
         ShuffleDeck(pokerDeck);
-
-        for (int i = 0; i < 5; i++)
-        {
-            DrawCard(pokerDeck);
-        }
-
-        string handResult = string.Join(", ", playerHand);
-        Debug.Log("ÇöÀç ³» Æ÷Ä¿ ¼ÕÆĞ: [ " + handResult + " ]");
-        Debug.Log("³²Àº µ¦ Ä«µå ¼ö: " + pokerDeck.Count);
     }
+
 
     void GeneratePokerDeck()
     {
@@ -56,7 +41,6 @@ public class DeckManager : MonoBehaviour
                 pokerDeck.Add(newCard);
             }
         }
-        Debug.Log("52ÀåÀÇ Æ÷Ä¿ µ¦ÀÌ »ı¼ºµÇ¾ú½À´Ï´Ù.");
     }
 
     public void ShuffleDeck<T>(List<T> deck)
@@ -68,22 +52,32 @@ public class DeckManager : MonoBehaviour
             deck[i] = deck[randomIndex];
             deck[randomIndex] = temp;
         }
-        Debug.Log("µ¦À» ¹«ÀÛÀ§·Î ¼¯¾ú½À´Ï´Ù.");
     }
 
-    public void DrawCard(List<PokerCard> deck)
+    public PokerCard DrawCard(List<PokerCard> deck)
     {
-        if (deck.Count > 0)
-        {
-            PokerCard drawnCard = deck[0];
-            deck.RemoveAt(0);
-            playerHand.Add(drawnCard);
+        // ë±ì—ì„œ ì¹´ë“œê°€ ë¶€ì¡±í•  ì¼ì€ ì—†ìŒ
+        PokerCard drawnCard = deck[0];
+        deck.RemoveAt(0);
+        playerHand.Add(drawnCard);
+        return drawnCard;
+    }
 
-            Debug.Log($"¢À {drawnCard.ToString()} Ä«µå¸¦ »Ì¾Ò½À´Ï´Ù!");
-        }
-        else
+    public void RemoveCardAll(List<PokerCard> deck)
+    {
+        // ë±ì—ì„œ ì¹´ë“œê°€ ë¶€ì¡±í•  ì¼ì€ ì—†ìŒ
+        List<PokerCard> tempPlayerHand = new List<PokerCard>();
+        foreach(var card in playerHand)
         {
-            Debug.LogWarning("µ¦¿¡ Ä«µå°¡ ¾ø½À´Ï´Ù!");
+            tempPlayerHand.Add(card);
         }
+        
+        playerHand.Clear();
+        foreach(var card in tempPlayerHand)
+        {
+            pokerDeck.Add(card);
+        }
+
+        ShuffleDeck(pokerDeck);
     }
 }
