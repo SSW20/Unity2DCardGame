@@ -13,8 +13,7 @@ public class CardHoverManager : MonoBehaviour
     [SerializeField] private SpecialSelectPanel specialSelectPanel;
     [SerializeField] private CardDescPanel descriptionPanel;
 
-    [SerializeField] public List<PokerCard> fieldList = new List<PokerCard>();   // ★ 신규
-    [SerializeField] public List<PokerCard> graveList = new List<PokerCard>();   
+
     void Start()
     {
         // Hand 타입 카드만 따로 저장 (거리 기반 처리용)

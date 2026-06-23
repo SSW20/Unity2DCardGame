@@ -22,6 +22,10 @@ public class CardManager : MonoBehaviour
 {
     public List<PokerCard> pokerDeck = new List<PokerCard>();
     public List<PokerCard> playerHand = new List<PokerCard>();
+
+    public List<PokerCard> fieldList = new List<PokerCard>();  
+    public List<PokerCard> graveList = new List<PokerCard>();   
+    public List<PokerCard> specialList = new List<PokerCard>();  
     void Awake()
     {
         GeneratePokerDeck();
@@ -79,5 +83,15 @@ public class CardManager : MonoBehaviour
         }
 
         ShuffleDeck(pokerDeck);
+    }
+
+    public bool MoveCard(PokerCard card, List<PokerCard> destination)
+    {
+        if (pokerDeck.Remove(card))   { destination.Add(card); return true; }
+        if (playerHand.Remove(card))  { destination.Add(card); return true; }
+        if (fieldList.Remove(card))   { destination.Add(card); return true; }
+        if (graveList.Remove(card))   { destination.Add(card); return true; }
+
+        return false;
     }
 }

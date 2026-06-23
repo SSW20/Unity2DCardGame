@@ -27,6 +27,7 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
 
     [Header("Card Type")]
     [SerializeField] public CardType cardType;
+    [SerializeField] public PokerCard pokerCard;
     
 
     [Header("Special Card Data")]
@@ -114,6 +115,11 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
             }
             bIsHover = false;
         }
+    }
+
+    public void SetPokerData(PokerCard card)
+    {
+        pokerCard = card;
     }
 
 }

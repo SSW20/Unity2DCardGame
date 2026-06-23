@@ -30,7 +30,6 @@ public class GameInputManager : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             AddCardToHand();
-            cardManager.DrawCard(cardManager.pokerDeck);
             yield return new WaitForSeconds(0.1f); // 0.1초 딜레이
         }
     }
@@ -96,6 +95,19 @@ public class GameInputManager : MonoBehaviour
     private void AddCardToHand()
     {
         GameObject newCard = Instantiate(cardPrefab, handPanel.transform);
+        PokerCard drawnCard = cardManager.DrawCard(cardManager.pokerDeck);
+
+        CardUI cardUI = newCard.GetComponent<CardUI>();
+        if (cardUI != null)
+        {
+            cardUI.SetPokerData(drawnCard);
+        }
+        CardDragManager cardDragManager = newCard.GetComponent<CardDragManager>();
+        if (cardDragManager != null)
+        {
+            cardDragManager.cardManager = cardManager;
+        }
+
         newCard.transform.position = deckPanel.position;
         newCard.transform.localScale = Vector3.one;
 

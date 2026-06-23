@@ -16,6 +16,8 @@ public class CardDragManager : MonoBehaviour,
     private int originalSiblingIndex;
     private HandLayoutManager handLayoutManager;
 
+    public CardManager cardManager;
+
 
 
     void Awake()
@@ -35,7 +37,7 @@ public class CardDragManager : MonoBehaviour,
         originalPosition = rectTransform.position;
         originalSiblingIndex = transform.GetSiblingIndex();
         originalRotation = rectTransform.localRotation;
-        Debug.Log("드래그 시작: " + originalPosition + ", " + originalRotation);
+
         // 원래 부모(HandPanel)에서 HandLayoutManager 찾아두기
         handLayoutManager = originalParent.GetComponent<HandLayoutManager>();
         CardUI cardUI = GetComponent<CardUI>();
@@ -66,7 +68,6 @@ public class CardDragManager : MonoBehaviour,
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        Debug.Log("드래그 종료: " + gameObject.transform.name);
         canvasGroup.blocksRaycasts = true;
 
         CardSlot targetSlot = GetSlotUnderPointer(eventData);
@@ -79,6 +80,9 @@ public class CardDragManager : MonoBehaviour,
             rectTransform.localRotation = Quaternion.identity;
             rectTransform.localScale = Vector3.one;
             targetSlot.SetCard(gameObject);
+
+            if (cardUI != null && cardManager != null)
+                cardManager.MoveCard(cardUI.pokerCard, cardManager.fieldList);   // Field로 보냄
 
             if (cardUI != null)
             {
@@ -103,7 +107,6 @@ public class CardDragManager : MonoBehaviour,
 
             // if (handLayoutManager != null)
             //     handLayoutManager.UpdateLayout(); 
-            Debug.Log("드래그 종료: " + cardUI.isDragging);
         }
     }
 
