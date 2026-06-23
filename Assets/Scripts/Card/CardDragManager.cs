@@ -11,8 +11,12 @@ public class CardDragManager : MonoBehaviour,
 
     private Transform originalParent;
     private Vector3 originalPosition;
+
+    private Quaternion originalRotation;
     private int originalSiblingIndex;
     private HandLayoutManager handLayoutManager;
+
+
 
     void Awake()
     {
@@ -26,12 +30,23 @@ public class CardDragManager : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        
         originalParent = transform.parent;
         originalPosition = rectTransform.position;
         originalSiblingIndex = transform.GetSiblingIndex();
-
+        originalRotation = rectTransform.localRotation;
+        Debug.Log("드래그 시작: " + originalPosition + ", " + originalRotation);
         // 원래 부모(HandPanel)에서 HandLayoutManager 찾아두기
         handLayoutManager = originalParent.GetComponent<HandLayoutManager>();
+        CardUI cardUI = GetComponent<CardUI>();
+        if (cardUI != null)
+        {
+            cardUI.isDragging = true;
+            cardUI.SetHover(false);        // 드래그 시작 시 자기 자신 호버 강제 해제
+            // cardUI.SetScaleImmediate();
+        }
+
+
 
         canvasGroup.blocksRaycasts = false;
 
@@ -39,6 +54,9 @@ public class CardDragManager : MonoBehaviour,
         transform.SetAsLastSibling();
 
         rectTransform.position = eventData.position;
+        rectTransform.localRotation = Quaternion.identity;
+
+        // handLayoutManager.UpdateLayout(); // 손패 재정렬
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -48,11 +66,12 @@ public class CardDragManager : MonoBehaviour,
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        Debug.Log("드래그 종료: " + gameObject.transform.name);
         canvasGroup.blocksRaycasts = true;
 
         CardSlot targetSlot = GetSlotUnderPointer(eventData);
-
-        if (targetSlot != null && !targetSlot.IsOccupied)
+        CardUI cardUI = GetComponent<CardUI>();
+        if (targetSlot != null && targetSlot.CanAcceptDrag(cardUI))
         {
             // 슬롯에 배치
             transform.SetParent(targetSlot.transform, false);
@@ -61,7 +80,6 @@ public class CardDragManager : MonoBehaviour,
             rectTransform.localScale = Vector3.one;
             targetSlot.SetCard(gameObject);
 
-            CardUI cardUI = GetComponent<CardUI>();
             if (cardUI != null)
             {
                 cardUI.cardType = CardType.Field;
@@ -77,10 +95,15 @@ public class CardDragManager : MonoBehaviour,
         }
         else
         {
-            // 원래 자리로 복귀
-            transform.SetParent(originalParent, false);
+            transform.SetParent(originalParent, true);
             transform.SetSiblingIndex(originalSiblingIndex);
-            rectTransform.position = originalPosition;
+
+            rectTransform.localPosition = cardUI.homeLocalPosition;   // 월드 좌표 변환 없이 local로 직접
+            rectTransform.localRotation = cardUI.homeLocalRotation;
+
+            // if (handLayoutManager != null)
+            //     handLayoutManager.UpdateLayout(); 
+            Debug.Log("드래그 종료: " + cardUI.isDragging);
         }
     }
 

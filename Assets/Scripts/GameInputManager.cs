@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class GameInputManager : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class GameInputManager : MonoBehaviour
     [SerializeField] private GameOverPannel gameOverPannel;
 
     [SerializeField] private SpecialSelectPanel specialSelectPanel;
+
 
     // Start is called before the first frame update
     void Start()
@@ -33,6 +35,7 @@ public class GameInputManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
         if (Input.GetKeyDown(KeyCode.V))
         {
             AddCardToHand();
@@ -52,10 +55,19 @@ public class GameInputManager : MonoBehaviour
             gameOverPannel.Hide();
         }
         if (Input.GetKeyDown(KeyCode.T))
-            specialSelectPanel.Show();
+        {
+            specialSelectPanel.Show(new List<(string, string)>
+            {
+                ("화염 강화", "다음 카드의 데미지가 2배"),
+                ("얼음 방패", "받는 피해를 50% 감소"),
+                ("연쇄 공격", "다음 턴 카드를 2장 더 사용")
+            });
+        }
 
         if (Input.GetKeyDown(KeyCode.Y))
             specialSelectPanel.Hide();
+
+            
     }
     private void RemoveCardFromHand()
     {

@@ -37,7 +37,7 @@ public class HandLayoutManager : MonoBehaviour
             if (cardUI != null && cardUI.isAnimation) continue; 
             cards.Add(child);
         }
-           
+   
         
         int count = cards.Count;
         if (count == 0) return;
@@ -52,7 +52,18 @@ public class HandLayoutManager : MonoBehaviour
 
             Vector3 targetPos = new Vector3(x, y, 0);
             Quaternion targetRot = Quaternion.Euler(0, 0, angle);
+            CardUI cardUI = cards[i].GetComponent<CardUI>();
+            if (cardUI != null)
+            {
+                // 호버 중이어도 "정답 위치"는 항상 최신으로 갱신
+                cardUI.homeLocalPosition = targetPos;
+                cardUI.homeLocalRotation = targetRot;
+                cardUI.homeSiblingIndex = i;
+                
+                if (cardUI.bIsHover) continue;   // 호버 중인 카드는 트윈으로 안 끌어당김
+            }
 
+            cards[i].DOKill();
             cards[i].DOLocalMove(targetPos, moveDuration).SetEase(Ease.OutCubic);
             cards[i].DOLocalRotateQuaternion(targetRot, moveDuration).SetEase(Ease.OutCubic);
         }

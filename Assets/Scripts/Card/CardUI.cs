@@ -1,5 +1,8 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using DG.Tweening;
+
 public enum CardType
 {
     Hand,    // 손패
@@ -7,7 +10,7 @@ public enum CardType
     Field,    // 필드
     Deck,     // 덱
 }
-public class CardUI : MonoBehaviour
+public class CardUI : MonoBehaviour, IPointerClickHandler
 {
     [Header("Card Animation")]
     [SerializeField] private bool UseAnimation = true;
@@ -25,14 +28,32 @@ public class CardUI : MonoBehaviour
     [Header("Card Type")]
     [SerializeField] public CardType cardType;
 
+    [Header("Special Card Data")]
+    public string cardName;
+    [TextArea] public string cardDescription;
+    public System.Action<CardUI> onClicked;
+
     public bool bIsHover = false;
     private Vector3 originalScale;
     private Vector3 targetScale;
     private Color originalColor;
 
+    public Vector3 homeLocalPosition;
+    public Quaternion homeLocalRotation;
+
+    public int homeSiblingIndex; 
+
+    public bool isDragging = false;
+
     private int originalIndex;
 
-    private Quaternion originalRotation;
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (cardType == CardType.Special)
+        {
+            onClicked?.Invoke(this);
+        }
+    }
 
     // private Canvas cardCanvas;
 
@@ -65,11 +86,11 @@ public class CardUI : MonoBehaviour
     // HandHoverManager가 직접 호출
     public void SetHover(bool isHover)
     {
-        if (!UseAnimation || cardType == CardType.Deck) return;
+        if (!UseAnimation || cardType == CardType.Deck || cardType == CardType.Special) return;
 
         if (isHover)
         {
-            originalRotation = transform.localRotation;
+            transform.DOKill(true);   
             targetScale = originalScale * hoverScale;
             // cardImage.color = hoverColor;
             if(cardType == CardType.Hand)
@@ -86,10 +107,13 @@ public class CardUI : MonoBehaviour
             // cardCanvas.sortingOrder = 0; 
             if(cardType == CardType.Hand)
             {
-              transform.SetLocalPositionAndRotation(transform.localPosition - Vector3.up * yOffset, originalRotation);
-              transform.SetSiblingIndex(originalIndex); // 원래 위치로 복원
+              transform.SetLocalPositionAndRotation(homeLocalPosition, homeLocalRotation);
+            //   transform.SetSiblingIndex(originalIndex); // 원래 위치로 복원
+              transform.SetSiblingIndex(homeSiblingIndex);
             }
             bIsHover = false;
         }
     }
+
 }
+
