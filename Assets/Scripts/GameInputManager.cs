@@ -18,14 +18,62 @@ public class GameInputManager : MonoBehaviour
 
     [SerializeField] private CardManager cardManager;
 
-    [SerializeField] private Transform fieldSlotContainer;   // 필드 슬롯들의 부모
+    [SerializeField] private Transform fieldSlotContainer;
 
-    [SerializeField] private AIController aiController;   
+    [SerializeField] private AIController aiController;
 
+    private bool isPlayerTurn = false;
 
-    // Start is called before the first frame update
     void Start()
     {
+        // 게임 시작 시 아무것도 하지 않음
+        isPlayerTurn = false;
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            StartPlayerTurn();
+        }
+
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            gameOverPannel.Show();
+        }
+
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            gameOverPannel.Hide();
+        }
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            specialSelectPanel.Show(new List<(string, string)>
+            {
+                ("Flame Boost", "Next card damage x2"),
+                ("Ice Shield", "Reduce damage by 50%"),
+                ("Chain Attack", "Use 2 additional cards next turn")
+            });
+        }
+
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+            specialSelectPanel.Hide();
+        }
+    }
+
+    // 플레이어 턴 시작
+    public void StartPlayerTurn()
+    {
+        if (isPlayerTurn) return;
+
+        isPlayerTurn = true;
+
+        // 코스트 초기화
+        cardManager.ResetPlayerCost();
+
+        // 카드 드로우
         StartCoroutine(DrawCards());
     }
 
@@ -34,47 +82,47 @@ public class GameInputManager : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             AddCardToHand();
-            yield return new WaitForSeconds(0.1f); // 0.1초 딜레이
+            yield return new WaitForSeconds(0.1f);
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    private void AddCardToHand()
     {
+        GameObject newCard = Instantiate(cardPrefab, handPanel.transform);
+        PokerCardData drawnCard = cardManager.DrawCard(cardManager.pokerDeck);
 
-        if (Input.GetKeyDown(KeyCode.V))
+        CardUI cardUI = newCard.GetComponent<CardUI>();
+        if (cardUI != null)
         {
-            StartCoroutine(DrawCards());
+            cardUI.SetPokerData(drawnCard);
         }
 
-        //  if (Input.GetKeyDown(KeyCode.B))
-        // {
-        //     RemoveCardFromHand();
-        // }
-
-         if (Input.GetKeyDown(KeyCode.G))
+        CardDragManager cardDragManager = newCard.GetComponent<CardDragManager>();
+        if (cardDragManager != null)
         {
-            gameOverPannel.Show();
-        }
-         if(Input.GetKeyDown(KeyCode.H))
-        {
-            gameOverPannel.Hide();
-        }
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            specialSelectPanel.Show(new List<(string, string)>
-            {
-                ("화염 강화", "다음 카드의 데미지가 2배"),
-                ("얼음 방패", "받는 피해를 50% 감소"),
-                ("연쇄 공격", "다음 턴 카드를 2장 더 사용")
-            });
+            cardDragManager.cardManager = cardManager;
         }
 
-        if (Input.GetKeyDown(KeyCode.Y))
-            specialSelectPanel.Hide();
+        newCard.transform.position = deckPanel.position;
+        newCard.transform.localScale = Vector3.one;
 
-            
+        handLayoutManager.UpdateLayout();
     }
+
+    // 플레이어 턴 종료 → AI 턴으로
+    public void OnTurnEnd()
+    {
+        if (!isPlayerTurn) return;
+
+        isPlayerTurn = false;
+
+        RemoveCardFromHand();
+        cardManager.RemoveCardAll(cardManager.pokerDeck);
+
+        // AI 턴 시작
+        aiController.TakeTurn();
+    }
+
     private void RemoveCardFromHand()
     {
         foreach (Transform child in handPanel)
@@ -90,32 +138,6 @@ public class GameInputManager : MonoBehaviour
             seq.Join(card.transform.DOMove(deckPanel.position, 0.3f).SetEase(Ease.InCubic));
             seq.AppendCallback(() => Destroy(card));
         }
-
-        cardManager.RemoveCardAll(cardManager.pokerDeck);
-    }
-
-
-
-    private void AddCardToHand()
-    {
-        GameObject newCard = Instantiate(cardPrefab, handPanel.transform);
-        PokerCardData drawnCard = cardManager.DrawCard(cardManager.pokerDeck);
-
-        CardUI cardUI = newCard.GetComponent<CardUI>();
-        if (cardUI != null)
-        {
-            cardUI.SetPokerData(drawnCard);
-        }
-        CardDragManager cardDragManager = newCard.GetComponent<CardDragManager>();
-        if (cardDragManager != null)
-        {
-            cardDragManager.cardManager = cardManager;
-        }
-
-        newCard.transform.position = deckPanel.position;
-        newCard.transform.localScale = Vector3.one;
-
-        handLayoutManager.UpdateLayout();
     }
 
     public void ButtonClicked()
@@ -123,32 +145,21 @@ public class GameInputManager : MonoBehaviour
         Debug.Log("Button was clicked!");
     }
 
-    public void OnTurnEnd()
-    {
-        RemoveCardFromHand();
-
-        cardManager.RemoveCardAll(cardManager.pokerDeck);
-        aiController.TakeTurn();
-    }
-
-
-
     public void OnFinish()
     {
-        // 2. 데이터 처리 + 점수 계산
+        // 데이터 처리 + 점수 계산
         SettlementResult result = cardManager.Settle();
         int score = cardManager.CalculateScore(result);
 
-        Debug.Log($"결산 점수: {score} " +
+        Debug.Log($"Settlement score: {score} " +
                 $"(Triples:[{string.Join(",", result.tripleRanks)}], " +
                 $"FourOfAKinds:[{string.Join(",", result.fourOfAKindRanks)}], " +
                 $"Straights:[{string.Join(",", result.straightDetails)}])");
 
         // TODO: score를 실제 UI(점수판)에 반영
 
-        // 3. 게임 종료 처리
+        // 게임 종료 처리
         RemoveCardFromHand();
-
         cardManager.RemoveCardAll(cardManager.pokerDeck);
 
         foreach (Transform slotTransform in fieldSlotContainer)
@@ -166,7 +177,7 @@ public class GameInputManager : MonoBehaviour
             slot.ClearSlot();
         }
         UpdateGraveVisual();
-        
+
     }
 
     private void AnimateAndDestroy(GameObject card, Vector3 targetPos)
@@ -177,7 +188,6 @@ public class GameInputManager : MonoBehaviour
         seq.AppendCallback(() => Destroy(card));
     }
 
-
     private List<GameObject> graveVisualStack = new List<GameObject>();
 
     private void UpdateGraveVisual()
@@ -185,7 +195,6 @@ public class GameInputManager : MonoBehaviour
         int actualCount = cardManager.graveList.Count;
         int visualCount = actualCount == 0 ? 0 : (actualCount / 2) + 1;
 
-        // 기존 시각 스택 정리
         foreach (var obj in graveVisualStack)
             Destroy(obj);
         graveVisualStack.Clear();

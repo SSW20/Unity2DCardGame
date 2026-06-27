@@ -32,7 +32,7 @@ public class CardDragManager : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        
+
         originalParent = transform.parent;
         originalPosition = rectTransform.position;
         originalSiblingIndex = transform.GetSiblingIndex();
@@ -45,10 +45,7 @@ public class CardDragManager : MonoBehaviour,
         {
             cardUI.isDragging = true;
             cardUI.SetHover(false);        // 드래그 시작 시 자기 자신 호버 강제 해제
-            // cardUI.SetScaleImmediate();
         }
-
-
 
         canvasGroup.blocksRaycasts = false;
 
@@ -57,8 +54,6 @@ public class CardDragManager : MonoBehaviour,
 
         rectTransform.position = eventData.position;
         rectTransform.localRotation = Quaternion.identity;
-
-        // handLayoutManager.UpdateLayout(); // 손패 재정렬
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -72,8 +67,30 @@ public class CardDragManager : MonoBehaviour,
 
         CardSlot targetSlot = GetSlotUnderPointer(eventData);
         CardUI cardUI = GetComponent<CardUI>();
+
         if (targetSlot != null && targetSlot.CanAcceptDrag(cardUI))
         {
+            // ===== ★ 코스트 체크 추가 =====
+            if (cardUI != null && cardManager != null)
+            {
+                // 코스트 확인
+                if (!cardManager.CanPlayerAffordCard(cardUI.pokerCardData))
+                {
+                    // 코스트 부족시 원래 위치로 복귀
+                    Debug.Log("코스트 부족! 카드가 손패로 돌아갑니다.");
+                    ReturnToHand(cardUI);
+                    return;
+                }
+
+                // 코스트 소비
+                if (!cardManager.SpendPlayerCost(cardUI.pokerCardData))
+                {
+                    // 코스트 소비 실패 → 원래 위치로 복귀
+                    ReturnToHand(cardUI);
+                    return;
+                }
+            }
+
             // 슬롯에 배치
             transform.SetParent(targetSlot.transform, false);
             rectTransform.anchoredPosition = Vector2.zero;
@@ -99,15 +116,29 @@ public class CardDragManager : MonoBehaviour,
         }
         else
         {
-            transform.SetParent(originalParent, true);
-            transform.SetSiblingIndex(originalSiblingIndex);
-
-            rectTransform.localPosition = cardUI.homeLocalPosition;   // 월드 좌표 변환 없이 local로 직접
-            rectTransform.localRotation = cardUI.homeLocalRotation;
-
-            // if (handLayoutManager != null)
-            //     handLayoutManager.UpdateLayout(); 
+            // 슬롯에 배치 실패 → 원래 위치로 복귀
+            ReturnToHand(cardUI);
         }
+    }
+
+    /// <summary>
+    /// 카드를 손패로 돌려보내기
+    /// </summary>
+    private void ReturnToHand(CardUI cardUI)
+    {
+        transform.SetParent(originalParent, true);
+        transform.SetSiblingIndex(originalSiblingIndex);
+
+        rectTransform.localPosition = cardUI.homeLocalPosition;
+        rectTransform.localRotation = cardUI.homeLocalRotation;
+
+        if (cardUI != null)
+        {
+            cardUI.isDragging = false;
+        }
+
+        if (handLayoutManager != null)
+            handLayoutManager.UpdateLayout();
     }
 
     private CardSlot GetSlotUnderPointer(PointerEventData eventData)

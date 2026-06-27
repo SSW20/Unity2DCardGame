@@ -20,16 +20,27 @@ public struct PokerCardData
 
 public class CardManager : MonoBehaviour
 {
+    [Header("코스트 시스템")]
+    [SerializeField] private int maxCostPerTurn = 21;
+
+    private int playerCurrentCost;
+    private int aiCurrentCost;
+
     public List<PokerCardData> pokerDeck = new List<PokerCardData>();
     public List<PokerCardData> playerHand = new List<PokerCardData>();
 
     public List<PokerCardData> fieldList = new List<PokerCardData>();  
     public List<PokerCardData> graveList = new List<PokerCardData>();   
     public List<PokerCardData> specialList = new List<PokerCardData>();  
+
+
     void Awake()
     {
         GeneratePokerDeck();
         ShuffleDeck(pokerDeck);
+
+        playerCurrentCost = maxCostPerTurn;
+        aiCurrentCost = maxCostPerTurn;
     }
 
     void GeneratePokerDeck()
@@ -82,6 +93,72 @@ public class CardManager : MonoBehaviour
         }
 
         ShuffleDeck(pokerDeck);
+    }
+
+    // ===== 코스트 시스템 =====
+
+    public void ResetPlayerCost()
+    {
+        playerCurrentCost = maxCostPerTurn;
+        Debug.Log($"플레이어 코스트 초기화: {playerCurrentCost}/{maxCostPerTurn}");
+    }
+
+    public void ResetAICost()
+    {
+        aiCurrentCost = maxCostPerTurn;
+        Debug.Log($"AI 코스트 초기화: {aiCurrentCost}/{maxCostPerTurn}");
+    }
+
+    public bool CanPlayerAffordCard(PokerCardData card)
+    {
+        int cardCost = (int)card.rank;
+        return playerCurrentCost >= cardCost;
+    }
+
+    public bool CanAIAffordCard(PokerCardData card)
+    {
+        int cardCost = (int)card.rank;
+        return aiCurrentCost >= cardCost;
+    }
+
+    public bool SpendPlayerCost(PokerCardData card)
+    {
+        int cardCost = (int)card.rank;
+        if (playerCurrentCost >= cardCost)
+        {
+            playerCurrentCost -= cardCost;
+            Debug.Log($"플레이어 카드 배치 (코스트 {cardCost}): {playerCurrentCost}/{maxCostPerTurn}");
+            return true;
+        }
+        Debug.Log($"코스트 부족! 필요: {cardCost}, 보유: {playerCurrentCost}");
+        return false;
+    }
+
+    public bool SpendAICost(PokerCardData card)
+    {
+        int cardCost = (int)card.rank;
+        if (aiCurrentCost >= cardCost)
+        {
+            aiCurrentCost -= cardCost;
+            Debug.Log($"AI card (cost {cardCost}): {aiCurrentCost}/{maxCostPerTurn}");
+            return true;
+        }
+        return false;
+    }
+
+    public int GetPlayerCurrentCost()
+    {
+        return playerCurrentCost;
+    }
+
+    public int GetAICurrentCost()
+    {
+        return aiCurrentCost;
+    }
+
+    public int GetMaxCost()
+    {
+        return maxCostPerTurn;
     }
 
     public bool MoveCard(PokerCardData card, List<PokerCardData> destination)
