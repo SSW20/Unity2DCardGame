@@ -20,6 +20,8 @@ public class GameInputManager : MonoBehaviour
 
     [SerializeField] private Transform fieldSlotContainer;   // 필드 슬롯들의 부모
 
+    [SerializeField] private AIController aiController;   
+
 
     // Start is called before the first frame update
     void Start()
@@ -126,6 +128,7 @@ public class GameInputManager : MonoBehaviour
         RemoveCardFromHand();
 
         cardManager.RemoveCardAll(cardManager.pokerDeck);
+        aiController.TakeTurn();
     }
 
 
