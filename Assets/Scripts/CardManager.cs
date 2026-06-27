@@ -32,7 +32,6 @@ public class CardManager : MonoBehaviour
         ShuffleDeck(pokerDeck);
     }
 
-
     void GeneratePokerDeck()
     {
         pokerDeck.Clear();
@@ -93,5 +92,45 @@ public class CardManager : MonoBehaviour
         if (graveList.Remove(card))   { destination.Add(card); return true; }
 
         return false;
+    }
+
+    public SettlementResult Settle()
+    {
+        List<PokerCard> pool = new List<PokerCard>();
+        pool.AddRange(fieldList);
+        pool.AddRange(graveList);
+
+        SettlementResult result = ScoreEvaluator.EvaluateAll(pool);
+
+        // 1. 기존 무덤 → 무조건 덱으로
+        // TODO: 애니메이션 
+        pokerDeck.AddRange(graveList);
+        graveList.Clear();
+
+        // 2. 기존 필드 → 점수에 참여했으면 덱, 안 했으면 새 무덤 
+        // TODO: 애니메이션 
+        List<PokerCard> fieldSnapshot = new List<PokerCard>(fieldList);
+        fieldList.Clear();
+
+        foreach (var card in fieldSnapshot)
+        {
+            if (result.usedCards.Contains(card))
+                pokerDeck.Add(card);
+            else
+                graveList.Add(card);
+        }
+
+        ShuffleDeck(pokerDeck);
+
+        return result;
+    }
+
+    public int CalculateScore(SettlementResult result)
+    {
+        int score = 0;
+        foreach (int rank in result.tripleRanks)      score += rank;
+        foreach (int rank in result.fourOfAKindRanks) score += rank;
+        foreach (var (high, count) in result.straightDetails) score += count + high;
+        return score;
     }
 }

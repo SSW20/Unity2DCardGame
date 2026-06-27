@@ -627,6 +627,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pokerDeck: []
   playerHand: []
+  fieldList: []
+  graveList: []
+  specialList: []
 --- !u!4 &207791755
 Transform:
   m_ObjectHideFlags: 0
@@ -4992,7 +4995,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1896592139}
         m_TargetAssemblyTypeName: GameInputManager, Assembly-CSharp
-        m_MethodName: ButtonClicked
+        m_MethodName: OnFinish
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5716,6 +5719,7 @@ MonoBehaviour:
   gameOverPannel: {fileID: 1792747257}
   specialSelectPanel: {fileID: 1957350225}
   cardManager: {fileID: 207791754}
+  fieldSlotContainer: {fileID: 0}
 --- !u!4 &1896592140
 Transform:
   m_ObjectHideFlags: 0
@@ -5991,6 +5995,9 @@ MonoBehaviour:
   cardImage: {fileID: 0}
   hoverColor: {r: 1, g: 0.9, b: 0.5, a: 1}
   cardType: 0
+  pokerCard:
+    suit: 0
+    rank: 0
   cardName: 
   cardDescription: 
   bIsHover: 0

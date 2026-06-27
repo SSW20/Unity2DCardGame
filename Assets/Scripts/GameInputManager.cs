@@ -18,6 +18,7 @@ public class GameInputManager : MonoBehaviour
 
     [SerializeField] private CardManager cardManager;
 
+    [SerializeField] private Transform fieldSlotContainer;   // 필드 슬롯들의 부모
 
     // Start is called before the first frame update
     void Start()
@@ -49,9 +50,9 @@ public class GameInputManager : MonoBehaviour
         // }
 
          if (Input.GetKeyDown(KeyCode.G))
-         {
-             gameOverPannel.Show();
-         }
+        {
+            gameOverPannel.Show();
+        }
          if(Input.GetKeyDown(KeyCode.H))
         {
             gameOverPannel.Hide();
@@ -86,8 +87,8 @@ public class GameInputManager : MonoBehaviour
             seq.Join(card.transform.DOMove(deckPanel.position, 0.3f).SetEase(Ease.InCubic));
             seq.AppendCallback(() => Destroy(card));
         }
-        cardManager.RemoveCardAll(cardManager.pokerDeck);
 
+        cardManager.RemoveCardAll(cardManager.pokerDeck);
     }
 
 
@@ -121,6 +122,37 @@ public class GameInputManager : MonoBehaviour
 
     public void OnTurnEnd()
     {
+        RemoveCardFromHand();
+
+        cardManager.RemoveCardAll(cardManager.pokerDeck);
+    }
+
+
+
+    public void OnFinish()
+    {
+        // 1. 시각적 카드 오브젝트 정리 (필드 슬롯에 떠있는 카드들 제거)
+        foreach (Transform slotTransform in fieldSlotContainer)
+        {
+            CardSlot slot = slotTransform.GetComponent<CardSlot>();
+            if (slot != null && slot.IsOccupied)
+            {
+                slot.ClearSlot();
+            }
+        }
+
+        // 2. 데이터 처리 + 점수 계산
+        SettlementResult result = cardManager.Settle();
+        int score = cardManager.CalculateScore(result);
+
+        Debug.Log($"결산 점수: {score} " +
+                $"(Triples:[{string.Join(",", result.tripleRanks)}], " +
+                $"FourOfAKinds:[{string.Join(",", result.fourOfAKindRanks)}], " +
+                $"Straights:[{string.Join(",", result.straightDetails)}])");
+
+        // TODO: score를 실제 UI(점수판)에 반영
+
+        // 3. 게임 종료 처리
         RemoveCardFromHand();
 
         cardManager.RemoveCardAll(cardManager.pokerDeck);
