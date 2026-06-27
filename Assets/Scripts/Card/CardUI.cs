@@ -13,13 +13,12 @@ public enum CardType
 public class CardUI : MonoBehaviour, IPointerClickHandler
 {
     [Header("Card Animation")]
-    [SerializeField] private bool UseAnimation = true;
+    [SerializeField] public bool useAnimation = true;
 
     [Header("Scale")]
     [SerializeField] private float hoverScale = 1.3f;
     [SerializeField] private float animSpeed = 10f;
     [SerializeField] private float yOffset = 40f;
-    [SerializeField] public bool isAnimation = false;
 
     [Header("Highlight")]
     [SerializeField] private Image cardImage;
@@ -27,7 +26,7 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
 
     [Header("Card Type")]
     [SerializeField] public CardType cardType;
-    [SerializeField] public PokerCard pokerCard;
+    [SerializeField] public PokerCardData pokerCardData;
     
 
     [Header("Special Card Data")]
@@ -77,7 +76,7 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
 
     void Update()
     {
-        if (!UseAnimation) return;
+        if (!useAnimation) return;
         transform.localScale = Vector3.Lerp(
             transform.localScale,
             targetScale,
@@ -88,7 +87,7 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
     // HandHoverManager가 직접 호출
     public void SetHover(bool isHover)
     {
-        if (!UseAnimation || cardType == CardType.Deck || cardType == CardType.Special) return;
+        if (!useAnimation || cardType == CardType.Deck || cardType == CardType.Special) return;
 
         if (isHover)
         {
@@ -117,9 +116,9 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    public void SetPokerData(PokerCard card)
+    public void SetPokerData(PokerCardData card)
     {
-        pokerCard = card;
+        pokerCardData = card;
     }
 
 }

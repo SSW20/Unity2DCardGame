@@ -82,7 +82,7 @@ public class CardDragManager : MonoBehaviour,
             targetSlot.SetCard(gameObject);
 
             if (cardUI != null && cardManager != null)
-                cardManager.MoveCard(cardUI.pokerCard, cardManager.fieldList);   // Field로 보냄
+                cardManager.MoveCard(cardUI.pokerCardData, cardManager.fieldList);   // Field로 보냄
 
             if (cardUI != null)
             {

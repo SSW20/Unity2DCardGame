@@ -34,7 +34,7 @@ public class HandLayoutManager : MonoBehaviour
         foreach (RectTransform child in transform)
         {
             CardUI cardUI = child.GetComponent<CardUI>();
-            if (cardUI != null && cardUI.isAnimation) continue; 
+            if (cardUI != null && !cardUI.useAnimation) continue; 
             cards.Add(child);
         }
    

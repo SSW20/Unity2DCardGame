@@ -6,22 +6,22 @@ public struct SettlementResult
     public List<int> fourOfAKindRanks;
     public List<(int high, int count)> straightDetails;   // 점수 계산용으로 카드 수도 같이 보관
 
-    public HashSet<PokerCard> usedCards;
+    public HashSet<PokerCardData> usedCards;
 }
 
 public static class ScoreEvaluator
 {
-    public static SettlementResult EvaluateAll(List<PokerCard> pool)
+    public static SettlementResult EvaluateAll(List<PokerCardData> pool)
     {
         var result = new SettlementResult
         {
             tripleRanks = new List<int>(),
             fourOfAKindRanks = new List<int>(),
             straightDetails = new List<(int, int)>(),
-            usedCards = new HashSet<PokerCard>()
+            usedCards = new HashSet<PokerCardData>()
         };
 
-        Dictionary<int, List<PokerCard>> rankGroups = BuildRankGroups(pool);
+        Dictionary<int, List<PokerCardData>> rankGroups = BuildRankGroups(pool);
 
         EvaluateTriple(rankGroups, ref result);
         EvaluateFourOfAKind(rankGroups, ref result);
@@ -30,19 +30,19 @@ public static class ScoreEvaluator
         return result;
     }
 
-    private static Dictionary<int, List<PokerCard>> BuildRankGroups(List<PokerCard> pool)
+    private static Dictionary<int, List<PokerCardData>> BuildRankGroups(List<PokerCardData> pool)
     {
-        var rankGroups = new Dictionary<int, List<PokerCard>>();
+        var rankGroups = new Dictionary<int, List<PokerCardData>>();
         foreach (var c in pool)
         {
             int r = (int)c.rank;
-            if (!rankGroups.ContainsKey(r)) rankGroups[r] = new List<PokerCard>();
+            if (!rankGroups.ContainsKey(r)) rankGroups[r] = new List<PokerCardData>();
             rankGroups[r].Add(c);
         }
         return rankGroups;
     }
 
-    private static void EvaluateTriple(Dictionary<int, List<PokerCard>> rankGroups, ref SettlementResult result)
+    private static void EvaluateTriple(Dictionary<int, List<PokerCardData>> rankGroups, ref SettlementResult result)
     {
         foreach (var kvp in rankGroups)
         {
@@ -55,7 +55,7 @@ public static class ScoreEvaluator
         result.tripleRanks.Sort((a, b) => b.CompareTo(a));
     }
 
-    private static void EvaluateFourOfAKind(Dictionary<int, List<PokerCard>> rankGroups, ref SettlementResult result)
+    private static void EvaluateFourOfAKind(Dictionary<int, List<PokerCardData>> rankGroups, ref SettlementResult result)
     {
         foreach (var kvp in rankGroups)
         {
@@ -68,9 +68,9 @@ public static class ScoreEvaluator
         result.fourOfAKindRanks.Sort((a, b) => b.CompareTo(a));
     }
 
-    private static void EvaluateStraight(List<PokerCard> pool, ref SettlementResult result)
+    private static void EvaluateStraight(List<PokerCardData> pool, ref SettlementResult result)
     {
-        Dictionary<int, PokerCard> rep = new Dictionary<int, PokerCard>();
+        Dictionary<int, PokerCardData> rep = new Dictionary<int, PokerCardData>();
         foreach (var c in pool)
         {
             int r = (int)c.rank;

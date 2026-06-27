@@ -17,8 +17,9 @@ public class CardSlot : MonoBehaviour
     [SerializeField] public SlotCategory category = SlotCategory.Field;
     [SerializeField] public SlotOwner owner = SlotOwner.Player;
 
-    public bool IsOccupied { get; private set; }
+    [SerializeField] public bool IsOccupied = false;
     public RectTransform RectTransform => (RectTransform)transform;
+    public GameObject CurrentCardObject => currentCard;
 
     private GameObject currentCard;
 

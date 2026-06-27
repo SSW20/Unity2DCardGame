@@ -6,12 +6,12 @@ public enum CardSuit { Spade, Heart, Diamond, Club }
 public enum CardRank { Ace = 1, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King }
 
 [System.Serializable]
-public struct PokerCard
+public struct PokerCardData
 {
     public CardSuit suit;
     public CardRank rank;
 
-    public PokerCard(CardSuit suit, CardRank rank)
+    public PokerCardData(CardSuit suit, CardRank rank)
     {
         this.suit = suit;
         this.rank = rank;
@@ -20,12 +20,12 @@ public struct PokerCard
 
 public class CardManager : MonoBehaviour
 {
-    public List<PokerCard> pokerDeck = new List<PokerCard>();
-    public List<PokerCard> playerHand = new List<PokerCard>();
+    public List<PokerCardData> pokerDeck = new List<PokerCardData>();
+    public List<PokerCardData> playerHand = new List<PokerCardData>();
 
-    public List<PokerCard> fieldList = new List<PokerCard>();  
-    public List<PokerCard> graveList = new List<PokerCard>();   
-    public List<PokerCard> specialList = new List<PokerCard>();  
+    public List<PokerCardData> fieldList = new List<PokerCardData>();  
+    public List<PokerCardData> graveList = new List<PokerCardData>();   
+    public List<PokerCardData> specialList = new List<PokerCardData>();  
     void Awake()
     {
         GeneratePokerDeck();
@@ -40,7 +40,7 @@ public class CardManager : MonoBehaviour
         {
             for (int r = 1; r <= 13; r++)
             {
-                PokerCard newCard = new PokerCard((CardSuit)s, (CardRank)r);
+                PokerCardData newCard = new PokerCardData((CardSuit)s, (CardRank)r);
                 pokerDeck.Add(newCard);
             }
         }
@@ -57,19 +57,19 @@ public class CardManager : MonoBehaviour
         }
     }
 
-    public PokerCard DrawCard(List<PokerCard> deck)
+    public PokerCardData DrawCard(List<PokerCardData> deck)
     {
         // 덱에서 카드가 부족할 일은 없음
-        PokerCard drawnCard = deck[0];
+        PokerCardData drawnCard = deck[0];
         deck.RemoveAt(0);
         playerHand.Add(drawnCard);
         return drawnCard;
     }
 
-    public void RemoveCardAll(List<PokerCard> deck)
+    public void RemoveCardAll(List<PokerCardData> deck)
     {
         // 덱에서 카드가 부족할 일은 없음
-        List<PokerCard> tempPlayerHand = new List<PokerCard>();
+        List<PokerCardData> tempPlayerHand = new List<PokerCardData>();
         foreach(var card in playerHand)
         {
             tempPlayerHand.Add(card);
@@ -84,7 +84,7 @@ public class CardManager : MonoBehaviour
         ShuffleDeck(pokerDeck);
     }
 
-    public bool MoveCard(PokerCard card, List<PokerCard> destination)
+    public bool MoveCard(PokerCardData card, List<PokerCardData> destination)
     {
         if (pokerDeck.Remove(card))   { destination.Add(card); return true; }
         if (playerHand.Remove(card))  { destination.Add(card); return true; }
@@ -96,7 +96,7 @@ public class CardManager : MonoBehaviour
 
     public SettlementResult Settle()
     {
-        List<PokerCard> pool = new List<PokerCard>();
+        List<PokerCardData> pool = new List<PokerCardData>();
         pool.AddRange(fieldList);
         pool.AddRange(graveList);
 
@@ -109,7 +109,7 @@ public class CardManager : MonoBehaviour
 
         // 2. 기존 필드 → 점수에 참여했으면 덱, 안 했으면 새 무덤 
         // TODO: 애니메이션 
-        List<PokerCard> fieldSnapshot = new List<PokerCard>(fieldList);
+        List<PokerCardData> fieldSnapshot = new List<PokerCardData>(fieldList);
         fieldList.Clear();
 
         foreach (var card in fieldSnapshot)

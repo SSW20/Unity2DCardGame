@@ -20,6 +20,7 @@ public class GameInputManager : MonoBehaviour
 
     [SerializeField] private Transform fieldSlotContainer;   // 필드 슬롯들의 부모
 
+
     // Start is called before the first frame update
     void Start()
     {
@@ -80,7 +81,7 @@ public class GameInputManager : MonoBehaviour
 
             CardUI cardUI = card.GetComponent<CardUI>();
             if (cardUI != null)
-                cardUI.isAnimation = true;
+                cardUI.useAnimation = false;
 
             Sequence seq = DOTween.Sequence();
             seq.Append(card.transform.DOScale(Vector3.zero, 0.3f));
@@ -96,7 +97,7 @@ public class GameInputManager : MonoBehaviour
     private void AddCardToHand()
     {
         GameObject newCard = Instantiate(cardPrefab, handPanel.transform);
-        PokerCard drawnCard = cardManager.DrawCard(cardManager.pokerDeck);
+        PokerCardData drawnCard = cardManager.DrawCard(cardManager.pokerDeck);
 
         CardUI cardUI = newCard.GetComponent<CardUI>();
         if (cardUI != null)
@@ -131,16 +132,6 @@ public class GameInputManager : MonoBehaviour
 
     public void OnFinish()
     {
-        // 1. 시각적 카드 오브젝트 정리 (필드 슬롯에 떠있는 카드들 제거)
-        foreach (Transform slotTransform in fieldSlotContainer)
-        {
-            CardSlot slot = slotTransform.GetComponent<CardSlot>();
-            if (slot != null && slot.IsOccupied)
-            {
-                slot.ClearSlot();
-            }
-        }
-
         // 2. 데이터 처리 + 점수 계산
         SettlementResult result = cardManager.Settle();
         int score = cardManager.CalculateScore(result);
@@ -156,5 +147,65 @@ public class GameInputManager : MonoBehaviour
         RemoveCardFromHand();
 
         cardManager.RemoveCardAll(cardManager.pokerDeck);
+
+        foreach (Transform slotTransform in fieldSlotContainer)
+        {
+            CardSlot slot = slotTransform.GetComponent<CardSlot>();
+            if (slot == null || !slot.IsOccupied) continue;
+
+            GameObject fieldCard = slot.CurrentCardObject;
+            CardUI cardUI = fieldCard.GetComponent<CardUI>();
+            bool wasUsed = cardUI != null && result.usedCards.Contains(cardUI.pokerCardData);
+
+            Vector3 targetPos = wasUsed ? deckPanel.position : graveyardPanel.position;
+            AnimateAndDestroy(fieldCard, targetPos);
+
+            slot.ClearSlot();
+        }
+        UpdateGraveVisual();
+        
+    }
+
+    private void AnimateAndDestroy(GameObject card, Vector3 targetPos)
+    {
+        Sequence seq = DOTween.Sequence();
+        seq.Append(card.transform.DOMove(targetPos, 0.3f));
+        seq.Join(card.transform.DOScale(Vector3.zero, 0.3f));
+        seq.AppendCallback(() => Destroy(card));
+    }
+
+
+    private List<GameObject> graveVisualStack = new List<GameObject>();
+
+    private void UpdateGraveVisual()
+    {
+        int actualCount = cardManager.graveList.Count;
+        int visualCount = actualCount == 0 ? 0 : (actualCount / 2) + 1;
+
+        // 기존 시각 스택 정리
+        foreach (var obj in graveVisualStack)
+            Destroy(obj);
+        graveVisualStack.Clear();
+
+        for (int i = 0; i < visualCount; i++)
+        {
+            GameObject card = Instantiate(cardPrefab, graveyardPanel);
+            RectTransform rt = card.GetComponent<RectTransform>();
+
+            if (i == 0)
+                rt.localRotation = Quaternion.identity;
+            else
+                rt.localRotation = Quaternion.Euler(0, 0, Random.Range(-5f, 5f));
+
+            rt.localScale = Vector3.one;
+
+            CardUI cardUI = card.GetComponent<CardUI>();
+            if (cardUI != null) cardUI.useAnimation = false;
+
+            CardDragManager dragManager = card.GetComponent<CardDragManager>();
+            if (dragManager != null) Destroy(dragManager);
+
+            graveVisualStack.Add(card);
+        }
     }
 }
