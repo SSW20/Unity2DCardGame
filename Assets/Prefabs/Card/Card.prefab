@@ -68,7 +68,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 0da6f36aefb08534d94f1cd3060f2be0, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 499d03d20e755b041a5524b4a64b7c53, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -90,17 +90,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3a183dc6a36eee48af2f0ee265d17ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UseAnimation: 1
+  useAnimation: 1
   hoverScale: 1.5
   animSpeed: 10
   yOffset: 100
-  isAnimation: 0
   cardImage: {fileID: 0}
   hoverColor: {r: 1, g: 0.9, b: 0.5, a: 1}
   cardType: 0
+  pokerCardData:
+    suit: 0
+    rank: 0
   cardName: 
   cardDescription: 
   bIsHover: 0
+  homeLocalPosition: {x: 0, y: 0, z: 0}
+  homeLocalRotation: {x: 0, y: 0, z: 0, w: 0}
+  homeSiblingIndex: 0
+  isDragging: 0
 --- !u!114 &6505728789944221230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -113,6 +119,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f16a04d5958bb34cb733b0ce2c4fac4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cardManager: {fileID: 0}
 --- !u!1 &1934062189243274493
 GameObject:
   m_ObjectHideFlags: 0
