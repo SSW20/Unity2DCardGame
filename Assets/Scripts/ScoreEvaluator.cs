@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 public struct SettlementResult
 {
@@ -25,7 +25,7 @@ public static class ScoreEvaluator
 
         EvaluateTriple(rankGroups, ref result);
         EvaluateFourOfAKind(rankGroups, ref result);
-        EvaluateStraight(pool, ref result);
+        EvaluateStraight(rankGroups, ref result);
 
         return result;
     }
@@ -48,7 +48,6 @@ public static class ScoreEvaluator
         {
             if (kvp.Value.Count == 3)
             {
-                // 트리플 카드 목록 전체를 저장
                 result.triples.Add(new List<PokerCardData>(kvp.Value));
                 foreach (var c in kvp.Value) result.usedCards.Add(c);
             }
@@ -61,46 +60,53 @@ public static class ScoreEvaluator
         {
             if (kvp.Value.Count == 4)
             {
-                // 포카드 카드 목록 전체를 저장
                 result.fourOfAKinds.Add(new List<PokerCardData>(kvp.Value));
                 foreach (var c in kvp.Value) result.usedCards.Add(c);
             }
         }
     }
 
-    private static void EvaluateStraight(List<PokerCardData> pool, ref SettlementResult result)
+   private static void EvaluateStraight(Dictionary<int, List<PokerCardData>> rankGroups, ref SettlementResult result)
     {
-        Dictionary<int, PokerCardData> rep = new Dictionary<int, PokerCardData>();
-        foreach (var c in pool)
+        Dictionary<int, int> usedIndex = new Dictionary<int, int>();
+        foreach (var key in rankGroups.Keys) usedIndex[key] = 0;
+
+        bool foundStraight = true;
+
+        while (foundStraight)
         {
-            int r = (int)c.rank;
-            if (!rep.ContainsKey(r)) rep[r] = c;
-        }
+            foundStraight = false;
 
-        List<int> sorted = new List<int>(rep.Keys);
-        sorted.Sort();
+            List<int> sorted = new List<int>();
+            foreach (var key in rankGroups.Keys)
+                if (usedIndex[key] < rankGroups[key].Count) sorted.Add(key);
+            sorted.Sort();
 
-        int runStart = 0;
-        int n = sorted.Count;
+            int n = sorted.Count;
+            int runStart = 0;
 
-        for (int i = 1; i <= n; i++)
-        {
-            bool broken = (i == n) || (sorted[i] != sorted[i - 1] + 1);
-            if (broken)
+            for (int i = 1; i <= n; i++)
             {
-                int length = i - runStart;
-                if (length >= 4)
+                bool broken = (i == n) || (sorted[i] != sorted[i - 1] + 1);
+                if (broken)
                 {
-                    // 런에 해당하는 카드 목록을 PokerCardData 전체로 저장
-                    List<PokerCardData> run = new List<PokerCardData>();
-                    for (int j = runStart; j < i; j++)
+                    int length = i - runStart;
+                    if (length >= 4)
                     {
-                        run.Add(rep[sorted[j]]);
-                        result.usedCards.Add(rep[sorted[j]]);
+                        // 스트레이트 발견 
+                        List<PokerCardData> newStraight = new List<PokerCardData>();
+                        for (int j = runStart; j < i; j++)
+                        {
+                            PokerCardData card = rankGroups[sorted[j]][usedIndex[sorted[j]]];
+                            newStraight.Add(card);
+                            result.usedCards.Add(card);
+                            usedIndex[sorted[j]]++;
+                        }
+                        result.straights.Add(newStraight);
+                        foundStraight = true;
                     }
-                    result.straights.Add(run);
+                    runStart = i;
                 }
-                runStart = i;
             }
         }
     }
