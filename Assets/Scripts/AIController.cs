@@ -164,12 +164,11 @@ public class AIController : MonoBehaviour
     private void DoSettle()
     {
         SettlementResult result = aiCardManager.Settle();
-        int score = aiCardManager.CalculateScore(result);
 
-        Debug.Log($"AI settlement score: {score} " +
-                  $"(Triples:[{string.Join(",", result.tripleRanks)}], " +
-                  $"FourOfAKinds:[{string.Join(",", result.fourOfAKindRanks)}], " +
-                  $"Straights:[{string.Join(",", result.straightDetails)}])");
+        int blankSlots = GetEmptyAISlots().Count;
+        float score = aiCardManager.CalculateScore(result, blankSlots);
+
+        Debug.Log($"AI settlement score: {score} ");
 
         // TODO: HP 시스템 생기면 여기서 플레이어한테 데미지 적용
 
@@ -199,7 +198,7 @@ public class AIController : MonoBehaviour
     private List<PokerCardData> FindBestCombination(List<PokerCardData> aiHand, int maxCards)
     {
         List<PokerCardData> bestCombo = new List<PokerCardData>();
-        int bestScore = -1;
+        float bestScore = -1;
         int n = aiHand.Count;
         int aiCurrentCost = aiCardManager.GetAICurrentCost();
         int maxAICost = aiCardManager.GetMaxCost();
@@ -227,7 +226,8 @@ public class AIController : MonoBehaviour
             testPool.AddRange(combo);
 
             SettlementResult result = ScoreEvaluator.EvaluateAll(testPool);
-            int score = aiCardManager.CalculateScore(result);
+            int blankSlots = GetEmptyAISlots().Count - combo.Count; 
+            float score = aiCardManager.CalculateScore(result, blankSlots);
 
             if (score > bestScore)
             {

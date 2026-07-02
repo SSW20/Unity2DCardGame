@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 public struct SettlementResult
 {
-    public List<int> tripleRanks;
-    public List<int> fourOfAKindRanks;
-    public List<(int high, int count)> straightDetails;   // 점수 계산용으로 카드 수도 같이 보관
+    public List<List<PokerCardData>> triples;
+    public List<List<PokerCardData>> fourOfAKinds;
+    public List<List<PokerCardData>> straights;   
 
     public HashSet<PokerCardData> usedCards;
 }
@@ -15,9 +15,9 @@ public static class ScoreEvaluator
     {
         var result = new SettlementResult
         {
-            tripleRanks = new List<int>(),
-            fourOfAKindRanks = new List<int>(),
-            straightDetails = new List<(int, int)>(),
+            triples = new List<List<PokerCardData>>(),
+            fourOfAKinds = new List<List<PokerCardData>>(),
+            straights = new List<List<PokerCardData>>(),
             usedCards = new HashSet<PokerCardData>()
         };
 
@@ -48,11 +48,11 @@ public static class ScoreEvaluator
         {
             if (kvp.Value.Count == 3)
             {
-                result.tripleRanks.Add(kvp.Key);
+                // 트리플 카드 목록 전체를 저장
+                result.triples.Add(new List<PokerCardData>(kvp.Value));
                 foreach (var c in kvp.Value) result.usedCards.Add(c);
             }
         }
-        result.tripleRanks.Sort((a, b) => b.CompareTo(a));
     }
 
     private static void EvaluateFourOfAKind(Dictionary<int, List<PokerCardData>> rankGroups, ref SettlementResult result)
@@ -61,11 +61,11 @@ public static class ScoreEvaluator
         {
             if (kvp.Value.Count == 4)
             {
-                result.fourOfAKindRanks.Add(kvp.Key);
+                // 포카드 카드 목록 전체를 저장
+                result.fourOfAKinds.Add(new List<PokerCardData>(kvp.Value));
                 foreach (var c in kvp.Value) result.usedCards.Add(c);
             }
         }
-        result.fourOfAKindRanks.Sort((a, b) => b.CompareTo(a));
     }
 
     private static void EvaluateStraight(List<PokerCardData> pool, ref SettlementResult result)
@@ -91,14 +91,17 @@ public static class ScoreEvaluator
                 int length = i - runStart;
                 if (length >= 4)
                 {
-                    int high = sorted[i - 1];
-                    result.straightDetails.Add((high, length));
+                    // 런에 해당하는 카드 목록을 PokerCardData 전체로 저장
+                    List<PokerCardData> run = new List<PokerCardData>();
                     for (int j = runStart; j < i; j++)
+                    {
+                        run.Add(rep[sorted[j]]);
                         result.usedCards.Add(rep[sorted[j]]);
+                    }
+                    result.straights.Add(run);
                 }
                 runStart = i;
             }
         }
-        result.straightDetails.Sort((a, b) => b.high.CompareTo(a.high));
     }
 }

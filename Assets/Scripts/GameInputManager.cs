@@ -152,12 +152,10 @@ public class GameInputManager : MonoBehaviour
     {
         // 데이터 처리 + 점수 계산
         SettlementResult result = cardManager.Settle();
-        int score = cardManager.CalculateScore(result);
+        int blankSlots = GetEmptyAISlots().Count;
+        float score = cardManager.CalculateScore(result, blankSlots);
 
-        Debug.Log($"Settlement score: {score} " +
-                $"(Triples:[{string.Join(",", result.tripleRanks)}], " +
-                $"FourOfAKinds:[{string.Join(",", result.fourOfAKindRanks)}], " +
-                $"Straights:[{string.Join(",", result.straightDetails)}])");
+        Debug.Log($"Settlement score: {score}");
 
         // TODO: score를 실제 UI(점수판)에 반영
 
@@ -222,5 +220,17 @@ public class GameInputManager : MonoBehaviour
 
             graveVisualStack.Add(card);
         }
+    }
+
+    private List<CardSlot> GetEmptyAISlots()
+    {
+        List<CardSlot> result = new List<CardSlot>();
+        CardSlot[] allSlots = fieldSlotContainer.GetComponentsInChildren<CardSlot>();
+        foreach (var slot in allSlots)
+        {
+            if (!slot.IsOccupied && slot.owner == SlotOwner.Enemy)
+                result.Add(slot);
+        }
+        return result;
     }
 }
