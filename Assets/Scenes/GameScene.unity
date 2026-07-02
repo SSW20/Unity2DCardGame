@@ -632,7 +632,7 @@ MonoBehaviour:
   fieldList: []
   graveList: []
   specialList: []
-  cardImageData: {fileID: 0}
+  cardImageData: {fileID: 11400000, guid: b97f90be378f4dd4fa15dedd7b28e658, type: 2}
 --- !u!4 &207791755
 Transform:
   m_ObjectHideFlags: 0
@@ -3447,7 +3447,7 @@ MonoBehaviour:
   fieldList: []
   graveList: []
   specialList: []
-  cardImageData: {fileID: 0}
+  cardImageData: {fileID: 11400000, guid: b97f90be378f4dd4fa15dedd7b28e658, type: 2}
 --- !u!4 &1287922616
 Transform:
   m_ObjectHideFlags: 0
@@ -6120,8 +6120,7 @@ MonoBehaviour:
   hoverScale: 1.5
   animSpeed: 10
   yOffset: 40
-  cardImage: {fileID: 0}
-  hoverColor: {r: 1, g: 0.9, b: 0.5, a: 1}
+  cardBackImage: {fileID: 0}
   cardType: 0
   pokerCardData:
     suit: 0
