@@ -20,13 +20,14 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
     [SerializeField] private float animSpeed = 10f;
     [SerializeField] private float yOffset = 40f;
 
-    [Header("Highlight")]
-    [SerializeField] private Image cardImage;
-    [SerializeField] private Color hoverColor = new Color(1f, 0.9f, 0.5f);
+    [Header("Sprite")]
+    private Sprite cardFrontImage;
+    [SerializeField] private Sprite cardBackImage;
 
     [Header("Card Type")]
     [SerializeField] public CardType cardType;
     [SerializeField] public PokerCardData pokerCardData;
+
     
 
     [Header("Special Card Data")]
@@ -56,22 +57,16 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    // private Canvas cardCanvas;
 
     void Awake()
     {
-        // cardCanvas = GetComponent<Canvas>();
         originalIndex = transform.GetSiblingIndex();
     }
 
     void Start()
     {
-        // if (cardImage == null)
-        //     cardImage = GetComponent<Image>();
-
         originalScale = transform.localScale;
         targetScale = originalScale;
-        // originalColor = cardImage.color;
     }
 
     void Update()
@@ -93,7 +88,6 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
         {
             transform.DOKill(true);   
             targetScale = originalScale * hoverScale;
-            // cardImage.color = hoverColor;
             if(cardType == CardType.Hand)
             {
               transform.SetLocalPositionAndRotation(transform.localPosition + Vector3.up * yOffset, Quaternion.identity);
@@ -104,12 +98,9 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
         else
         {
             targetScale = originalScale;
-            // cardImage.color = originalColor;
-            // cardCanvas.sortingOrder = 0; 
             if(cardType == CardType.Hand)
             {
               transform.SetLocalPositionAndRotation(homeLocalPosition, homeLocalRotation);
-            //   transform.SetSiblingIndex(originalIndex); // 원래 위치로 복원
               transform.SetSiblingIndex(homeSiblingIndex);
             }
             bIsHover = false;
@@ -119,6 +110,13 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
     public void SetPokerData(PokerCardData card)
     {
         pokerCardData = card;
+        cardFrontImage = pokerCardData.sprite;
+    }
+
+    public void FlipCard(bool faceUp)
+    {
+        Image cardImage = GetComponent<Image>();
+        cardImage.sprite = faceUp ? cardFrontImage : cardBackImage;
     }
 
 }

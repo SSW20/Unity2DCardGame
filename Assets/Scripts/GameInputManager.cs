@@ -95,6 +95,9 @@ public class GameInputManager : MonoBehaviour
         if (cardUI != null)
         {
             cardUI.SetPokerData(drawnCard);
+
+            // 카드 앞면 표시 설정 해주는 곳 --> 앞면은 필드, 핸드 말고 더 있어야되는 이유가 있나? 
+            cardUI.FlipCard(true);
         }
 
         CardDragManager cardDragManager = newCard.GetComponent<CardDragManager>();

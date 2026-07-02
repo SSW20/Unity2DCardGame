@@ -11,10 +11,13 @@ public struct PokerCardData
     public CardSuit suit;
     public CardRank rank;
 
-    public PokerCardData(CardSuit suit, CardRank rank)
+    public Sprite sprite;
+    
+    public PokerCardData(CardSuit suit, CardRank rank, Sprite sprite)
     {
         this.suit = suit;
         this.rank = rank;
+        this.sprite = sprite;
     }
 }
 
@@ -33,6 +36,7 @@ public class CardManager : MonoBehaviour
     public List<PokerCardData> graveList = new List<PokerCardData>();   
     public List<PokerCardData> specialList = new List<PokerCardData>();  
 
+    public CardImageData cardImageData;
 
     void Awake()
     {
@@ -51,7 +55,7 @@ public class CardManager : MonoBehaviour
         {
             for (int r = 1; r <= 13; r++)
             {
-                PokerCardData newCard = new PokerCardData((CardSuit)s, (CardRank)r);
+                PokerCardData newCard = new PokerCardData((CardSuit)s, (CardRank)r, cardImageData.GetSprite((CardSuit)s, (CardRank)r));
                 pokerDeck.Add(newCard);
             }
         }

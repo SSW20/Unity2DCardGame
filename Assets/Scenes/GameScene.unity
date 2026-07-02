@@ -632,6 +632,7 @@ MonoBehaviour:
   fieldList: []
   graveList: []
   specialList: []
+  cardImageData: {fileID: 0}
 --- !u!4 &207791755
 Transform:
   m_ObjectHideFlags: 0
@@ -3446,6 +3447,7 @@ MonoBehaviour:
   fieldList: []
   graveList: []
   specialList: []
+  cardImageData: {fileID: 0}
 --- !u!4 &1287922616
 Transform:
   m_ObjectHideFlags: 0
@@ -6124,6 +6126,7 @@ MonoBehaviour:
   pokerCardData:
     suit: 0
     rank: 0
+    sprite: {fileID: 0}
   cardName: 
   cardDescription: 
   bIsHover: 0

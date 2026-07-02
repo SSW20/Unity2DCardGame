@@ -82,7 +82,11 @@ public class AIController : MonoBehaviour
             cardObj.transform.localScale = Vector3.one;
 
             CardUI cardUI = cardObj.GetComponent<CardUI>();
-            if (cardUI != null) cardUI.SetPokerData(card);
+            if (cardUI != null)
+            {
+                cardUI.SetPokerData(card);
+                cardUI.FlipCard(true); // 카드 앞면 표시
+            }
 
             CardDragManager dragManager = cardObj.GetComponent<CardDragManager>();
             if (dragManager != null) Destroy(dragManager);
