@@ -34,7 +34,7 @@ public class CardDescPanel : MonoBehaviour
 
     public void Hide()
     {
-        canvasGroup.alpha = 0f;
+        if(canvasGroup != null) canvasGroup.alpha = 0f;
     }
 
     private void PositionNextTo(RectTransform cardRect)

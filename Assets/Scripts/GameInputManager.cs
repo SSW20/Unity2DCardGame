@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -21,6 +22,8 @@ public class GameInputManager : MonoBehaviour
     [SerializeField] private Transform fieldSlotContainer;
 
     [SerializeField] private AIController aiController;
+
+    [SerializeField] private TextMeshProUGUI playerScoreText;
 
     private bool isPlayerTurn = false;
 
@@ -158,6 +161,10 @@ public class GameInputManager : MonoBehaviour
         Debug.Log($"Settlement score: {score}");
 
         // TODO: score를 실제 UI(점수판)에 반영
+        if (playerScoreText != null)
+        {
+            playerScoreText.text = $"Score: {score}";
+        }
 
         // 게임 종료 처리
         RemoveCardFromHand();

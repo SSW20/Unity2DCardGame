@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum CardSuit { Spade, Heart, Diamond, Club }
 
@@ -35,6 +37,8 @@ public class CardManager : MonoBehaviour
     public List<PokerCardData> fieldList = new List<PokerCardData>();  
     public List<PokerCardData> graveList = new List<PokerCardData>();   
     public List<PokerCardData> specialList = new List<PokerCardData>();  
+    
+    [SerializeField] private TextMeshProUGUI playerCostText;
 
     public CardImageData cardImageData;
 
@@ -105,6 +109,10 @@ public class CardManager : MonoBehaviour
     {
         playerCurrentCost = maxCostPerTurn;
         Debug.Log($"플레이어 코스트 초기화: {playerCurrentCost}/{maxCostPerTurn}");
+        if (playerCostText != null)
+        {
+            playerCostText.text = playerCurrentCost.ToString();
+        }
     }
 
     public void ResetAICost()
@@ -131,7 +139,7 @@ public class CardManager : MonoBehaviour
         if (playerCurrentCost >= cardCost)
         {
             playerCurrentCost -= cardCost;
-            Debug.Log($"플레이어 카드 배치 (코스트 {cardCost}): {playerCurrentCost}/{maxCostPerTurn}");
+            playerCostText.text = playerCurrentCost.ToString();
             return true;
         }
         Debug.Log($"코스트 부족! 필요: {cardCost}, 보유: {playerCurrentCost}");
