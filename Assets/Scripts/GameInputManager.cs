@@ -5,8 +5,10 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+
 public class GameInputManager : MonoBehaviour
 {
+    [SerializeField] private GameTurnManager gameTurnManager;
     [SerializeField] private GameObject cardPrefab;
     [SerializeField] private Transform handPanel;
     [SerializeField] private Transform deckPanel;
@@ -29,15 +31,15 @@ public class GameInputManager : MonoBehaviour
 
     void Start()
     {
-        // 게임 시작 시 아무것도 하지 않음
-        isPlayerTurn = false;
+
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.V))
         {
-            StartPlayerTurn();
+            if (gameTurnManager != null)
+                gameTurnManager.StartGame();
         }
 
         if (Input.GetKeyDown(KeyCode.G))
@@ -65,6 +67,8 @@ public class GameInputManager : MonoBehaviour
             specialSelectPanel.Hide();
         }
     }
+
+
 
     // 플레이어 턴 시작
     public void StartPlayerTurn()
@@ -118,15 +122,16 @@ public class GameInputManager : MonoBehaviour
     // 플레이어 턴 종료 → AI 턴으로
     public void OnTurnEnd()
     {
-        if (!isPlayerTurn) return;
+        if (gameTurnManager != null)
+            gameTurnManager.OnPlayerTurnEndButton();
+    }
 
+    public void CleanupPlayerHandAfterTurn()
+    {
         isPlayerTurn = false;
 
         RemoveCardFromHand();
         cardManager.RemoveCardAll(cardManager.pokerDeck);
-
-        // AI 턴 시작
-        aiController.TakeTurn();
     }
 
     private void RemoveCardFromHand()

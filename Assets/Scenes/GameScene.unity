@@ -2126,6 +2126,59 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -185}
   m_SizeDelta: {x: 250, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &666391988
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 666391990}
+  - component: {fileID: 666391989}
+  m_Layer: 0
+  m_Name: turnmanager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &666391989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 666391988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 202401a0e9f4c5f428db17b056adc451, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameInputManager: {fileID: 1896592139}
+  aiController: {fileID: 2032059631}
+  playerCardManager: {fileID: 207791754}
+  aiCardManager: {fileID: 1287922615}
+  gameOverPannel: {fileID: 0}
+  targetScore: 500
+  playerTotalScoreText: {fileID: 0}
+  aiTotalScoreText: {fileID: 0}
+  phaseText: {fileID: 0}
+--- !u!4 &666391990
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 666391988}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!224 &766166081 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5290218496764627919, guid: 4979c4d1bff46a34ba19dedd7f1763d4, type: 3}
@@ -6263,6 +6316,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d721283057a633649b246de13cd3fddb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameTurnManager: {fileID: 0}
   cardPrefab: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
   handPanel: {fileID: 2051791735}
   deckPanel: {fileID: 1035498038}
@@ -6664,6 +6718,7 @@ MonoBehaviour:
   thinkingDelay: 1
   perCardDelay: 0.8
   beforeSettleDelay: 2
+  fastModeDelayScale: 0.25
   baseSettleChance: 0.2
   fullFieldBonus: 0.3
   emptyHandPenalty: 0.15
@@ -6951,3 +7006,4 @@ SceneRoots:
   - {fileID: 207791755}
   - {fileID: 1287922616}
   - {fileID: 2032059630}
+  - {fileID: 666391990}

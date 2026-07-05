@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
-
+using System;
 public class AIController : MonoBehaviour
 {
     [Header("AI Data")]
@@ -20,6 +20,10 @@ public class AIController : MonoBehaviour
     [SerializeField] private float perCardDelay = 0.4f;
     [SerializeField] private float beforeSettleDelay = 0.8f;
 
+    //배속값 조정
+    [Header("Fast Mode")]
+    [SerializeField] private float fastModeDelayScale = 0.5f;
+
     [Header("Settlement Random Weight")]
     [SerializeField] private float baseSettleChance = 0.2f;
     [SerializeField] private float fullFieldBonus = 0.3f;
@@ -29,13 +33,19 @@ public class AIController : MonoBehaviour
 
     private int turnsSinceLastSettle = 0;
 
-    public void TakeTurn()
+    public void TakeTurn(Action<bool> onFinished, bool fastMode = false)
     {
-        StartCoroutine(TakeTurnRoutine());
+        StartCoroutine(TakeTurnRoutine(onFinished, fastMode));
     }
 
-    private IEnumerator TakeTurnRoutine()
+    public void TakeTurn()
     {
+        TakeTurn(null, false);
+    }
+
+    private IEnumerator TakeTurnRoutine(Action<bool> onFinished, bool fastMode)
+    {
+        float delayScale = fastMode ? fastModeDelayScale : 1f;
         turnsSinceLastSettle++;
 
         // AI 코스트 초기화
@@ -48,7 +58,7 @@ public class AIController : MonoBehaviour
             aiCardManager.DrawCard(aiCardManager.pokerDeck);
         }
 
-        yield return new WaitForSeconds(thinkingDelay);
+        yield return new WaitForSeconds(thinkingDelay * delayScale);
 
         // 2. 빈 슬롯 확인, 필드+손패 합쳐서 최적 조합 탐색 (코스트 고려)
         List<CardSlot> emptySlots = GetEmptyAISlots();
@@ -59,6 +69,8 @@ public class AIController : MonoBehaviour
 
         // 3. 배치 애니메이션
         int slotIndex = 0;
+        int placedCount = 0;
+
         foreach (var card in bestPlay)
         {
             // AI 코스트 체크
@@ -76,6 +88,7 @@ public class AIController : MonoBehaviour
 
             CardSlot slot = emptySlots[slotIndex];
             slotIndex++;
+            placedCount++;
 
             GameObject cardObj = Instantiate(cardPrefab, slot.transform);
             cardObj.transform.position = aiDeckPanel.position;
@@ -107,17 +120,20 @@ public class AIController : MonoBehaviour
             slot.SetCard(cardObj);
             aiCardManager.MoveCard(card, aiCardManager.fieldList);
 
-            yield return new WaitForSeconds(perCardDelay);
+            yield return new WaitForSeconds(perCardDelay * delayScale);
         }
 
-        Debug.Log($"AI placed {bestPlay.Count} cards (Remaining cost: {aiCardManager.GetAICurrentCost()}/{aiCardManager.GetMaxCost()})");
-
+        Debug.Log($"AI placed {placedCount} cards (Remaining cost: {aiCardManager.GetAICurrentCost()}/{aiCardManager.GetMaxCost()})");
         // 4. 안 쓴 손패 전부 덱으로 반납
         DiscardAIHand();
 
-        // 5. 결산할지 랜덤 판단
-        yield return new WaitForSeconds(beforeSettleDelay);
-        TryRandomSettle(emptySlots.Count - bestPlay.Count);
+        // 5. AI가 Turn End 할지 Stop 할지 결정
+        yield return new WaitForSeconds(beforeSettleDelay * delayScale);
+
+        int remainingEmptySlots = emptySlots.Count - placedCount;
+        bool aiChoseStop = DecideStopOrTurnEnd(remainingEmptySlots);
+
+        onFinished?.Invoke(aiChoseStop);
     }
 
     // 비어있는 AI 슬롯 찾기
@@ -139,8 +155,36 @@ public class AIController : MonoBehaviour
         aiCardManager.RemoveCardAll(aiCardManager.pokerDeck);
     }
 
+    private bool DecideStopOrTurnEnd(int remainingEmptySlots)
+    {
+        float chance = baseSettleChance;
+
+        bool fieldNearlyFull = remainingEmptySlots <= 1;
+        bool fieldHasNothing = aiCardManager.fieldList.Count == 0;
+
+        if (fieldNearlyFull) chance += fullFieldBonus;
+        if (fieldHasNothing) chance -= emptyHandPenalty;
+        if (turnsSinceLastSettle >= longTurnThreshold) chance += longTurnBonus;
+
+        chance = Mathf.Clamp01(chance);
+
+        bool willStop = UnityEngine.Random.value < chance;
+
+        Debug.Log($"AI stop check: chance={chance:F2}, stop={willStop}");
+
+        if (willStop)
+            turnsSinceLastSettle = 0;
+
+        return willStop;
+    }
+
+    public void ResetRoundState()
+    {
+        turnsSinceLastSettle = 0;
+    }
+
     // 결산 확률 계산 및 판단
-    private void TryRandomSettle(int remainingEmptySlots)
+    /*private void TryRandomSettle(int remainingEmptySlots)
     {
         float chance = baseSettleChance;
 
@@ -192,7 +236,7 @@ public class AIController : MonoBehaviour
         }
 
         turnsSinceLastSettle = 0;
-    }
+    }*/
 
     // 필드에 이미 있는 카드 + 후보 조합을 합쳐서 평가 (코스트 고려)
     private List<PokerCardData> FindBestCombination(List<PokerCardData> aiHand, int maxCards)
