@@ -6316,7 +6316,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d721283057a633649b246de13cd3fddb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameTurnManager: {fileID: 0}
+  gameTurnManager: {fileID: 666391989}
   cardPrefab: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
   handPanel: {fileID: 2051791735}
   deckPanel: {fileID: 1035498038}

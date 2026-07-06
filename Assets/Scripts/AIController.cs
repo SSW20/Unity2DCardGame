@@ -124,6 +124,7 @@ public class AIController : MonoBehaviour
         }
 
         Debug.Log($"AI placed {placedCount} cards (Remaining cost: {aiCardManager.GetAICurrentCost()}/{aiCardManager.GetMaxCost()})");
+
         // 4. 안 쓴 손패 전부 덱으로 반납
         DiscardAIHand();
 
@@ -182,61 +183,6 @@ public class AIController : MonoBehaviour
     {
         turnsSinceLastSettle = 0;
     }
-
-    // 결산 확률 계산 및 판단
-    /*private void TryRandomSettle(int remainingEmptySlots)
-    {
-        float chance = baseSettleChance;
-
-        bool fieldNearlyFull = remainingEmptySlots <= 1;
-        bool fieldHasNothing = aiCardManager.fieldList.Count == 0;
-
-        if (fieldNearlyFull) chance += fullFieldBonus;
-        if (fieldHasNothing) chance -= emptyHandPenalty;
-        if (turnsSinceLastSettle >= longTurnThreshold) chance += longTurnBonus;
-
-        chance = Mathf.Clamp01(chance);
-
-        bool willSettle = Random.value < chance;
-        Debug.Log($"AI settlement check: chance={chance:F2}, result={willSettle}");
-
-        if (willSettle)
-            DoSettle();
-    }
-
-    // 결산 수행
-    private void DoSettle()
-    {
-        SettlementResult result = aiCardManager.Settle();
-
-        int blankSlots = GetEmptyAISlots().Count;
-        float score = aiCardManager.CalculateScore(result, blankSlots);
-
-        Debug.Log($"AI settlement score: {score} ");
-
-        // TODO: HP 시스템 생기면 여기서 플레이어한테 데미지 적용
-
-        CardSlot[] allSlots = aiFieldSlotContainer.GetComponentsInChildren<CardSlot>();
-        foreach (var slot in allSlots)
-        {
-            if (!slot.IsOccupied) continue;
-
-            GameObject fieldCard = slot.CurrentCardObject;
-            CardUI cardUI = fieldCard.GetComponent<CardUI>();
-            bool wasUsed = cardUI != null && result.usedCards.Contains(cardUI.pokerCardData);
-
-            Vector3 targetPos = aiDeckPanel.position;   // TODO: AI 무덤 위치 생기면 wasUsed로 분기
-
-            Sequence seq = DOTween.Sequence();
-            seq.Append(fieldCard.transform.DOMove(targetPos, 0.3f));
-            seq.Join(fieldCard.transform.DOScale(Vector3.zero, 0.3f));
-            seq.AppendCallback(() => Destroy(fieldCard));
-
-            slot.ClearSlot();
-        }
-
-        turnsSinceLastSettle = 0;
-    }*/
 
     // 필드에 이미 있는 카드 + 후보 조합을 합쳐서 평가 (코스트 고려)
     private List<PokerCardData> FindBestCombination(List<PokerCardData> aiHand, int maxCards)

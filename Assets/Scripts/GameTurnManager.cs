@@ -161,6 +161,7 @@ public class GameTurnManager : MonoBehaviour
         }
     }
 
+    // TODO : 결산페이즈에서의 딜레이가 필요
     private void StartSettlementPhase()
     {
         currentPhase = GamePhase.Settlement;
@@ -184,6 +185,8 @@ public class GameTurnManager : MonoBehaviour
         ApplyRoundScore(playerRoundScore, aiRoundScore);
     }
 
+
+    // 질문 : 이 함수를 통해 점수 차 누적 값을 빨간색 슬라이드에 더하는 거면 디버그 보다는 실제로 값을 조정하는 게 좋을듯요.
     private void ApplyRoundScore(float playerRoundScore, float aiRoundScore)
     {
         int diff = Mathf.RoundToInt(Mathf.Abs(playerRoundScore - aiRoundScore));
@@ -191,16 +194,16 @@ public class GameTurnManager : MonoBehaviour
         if (playerRoundScore > aiRoundScore)
         {
             playerTotalScore += diff;
-            Debug.Log($"�÷��̾ {diff}�� ȹ��");
+            Debug.Log($"Player: {diff} points added");
         }
         else if (aiRoundScore > playerRoundScore)
         {
             aiTotalScore += diff;
-            Debug.Log($"AI�� {diff}�� ȹ��");
+            Debug.Log($"AI: {diff} points added");
         }
         else
         {
-            Debug.Log("�����Դϴ�. ���� ȹ�� ����");
+            Debug.Log("No points added.");
         }
 
         UpdateScoreUI();
@@ -214,7 +217,7 @@ public class GameTurnManager : MonoBehaviour
             currentPhase = GamePhase.GameOver;
             UpdatePhaseUI();
 
-            Debug.Log("�÷��̾� �¸�");
+            Debug.Log("Player wins");
 
             if (gameOverPannel != null)
                 gameOverPannel.Show();
@@ -227,7 +230,7 @@ public class GameTurnManager : MonoBehaviour
             currentPhase = GamePhase.GameOver;
             UpdatePhaseUI();
 
-            Debug.Log("�÷��̾� �й�");
+            Debug.Log("AI win");
 
             if (gameOverPannel != null)
                 gameOverPannel.Show();
@@ -256,6 +259,7 @@ public class GameTurnManager : MonoBehaviour
         return count;
     }
 
+    // TODO : 애니메이션 수정 필요, 카드가 사라질때 덱으로 돌아가는 애니메이션이 필요
     private void ClearFieldVisuals(SlotOwner owner)
     {
         CardSlot[] slots = FindObjectsOfType<CardSlot>();
@@ -275,6 +279,7 @@ public class GameTurnManager : MonoBehaviour
         }
     }
 
+    // 질문 : 이 값이 목표치에 대한 누적값 == 빨간색 슬라이드 바의 값인지?
     private void UpdateScoreUI()
     {
         if (playerTotalScoreText != null)
@@ -284,25 +289,30 @@ public class GameTurnManager : MonoBehaviour
             aiTotalScoreText.text = $"AI: {aiTotalScore}";
     }
 
+    // 질문 : 이 값이 현재 턴의 상태를 나타내는 값이라면 어디에? 
     private void UpdatePhaseUI()
     {
         if (phaseText != null)
             phaseText.text = currentPhase.ToString();
     }
 
+    // 질문 : 각 페이즈마다 해야되는 일들 
+    // 예를들어 AI턴일 떄 플레이어의 카드움직임을 막고, 버튼을 비활성화 시킨다던지, 플레이어의 턴일 떄 AI의 행동을 막고
+    // 플레이어가 먼저 결산 시 AI에게 배속을 걸고
+    // 결산 페이즈일 떄는 양쪽 다 조작을 막는게 좋겟죠?
     private void Update()
     {
         if (currentPhase != GamePhase.PlayerTurn) return;
 
         if (Input.GetKeyDown(KeyCode.E))
         {
-            Debug.Log("�׽�Ʈ �Է�: Turn End");
+            Debug.Log("Player: Turn End");
             OnPlayerTurnEndButton();
         }
 
         if (Input.GetKeyDown(KeyCode.S))
         {
-            Debug.Log("�׽�Ʈ �Է�: Stop");
+            Debug.Log("Player: Stop");
             OnPlayerStopButton();
         }
     }
