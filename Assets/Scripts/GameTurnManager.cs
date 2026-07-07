@@ -1,6 +1,6 @@
 using TMPro;
 using UnityEngine;
-
+using UnityEngine.UI;
 public enum TurnOwner
 {
     Player,
@@ -36,6 +36,10 @@ public class GameTurnManager : MonoBehaviour
     [SerializeField] private TMP_Text aiTotalScoreText;
     [SerializeField] private TMP_Text phaseText;
 
+    [Header("Buttons")]
+    [SerializeField] private Button stopButton;
+    [SerializeField] private Button turnEndButton;
+
     private TurnOwner currentTurn;
     private GamePhase currentPhase;
 
@@ -47,6 +51,7 @@ public class GameTurnManager : MonoBehaviour
 
     private void Start()
     {
+        SetupButtons();
         StartGame();
     }
 
@@ -57,6 +62,21 @@ public class GameTurnManager : MonoBehaviour
 
         UpdateScoreUI();
         StartNewRound();
+    }
+
+    private void SetupButtons()
+    {
+        if (stopButton != null)
+        {
+            stopButton.onClick = new Button.ButtonClickedEvent();
+            stopButton.onClick.AddListener(OnPlayerStopButton);
+        }
+
+        if (turnEndButton != null)
+        {
+            turnEndButton.onClick = new Button.ButtonClickedEvent();
+            turnEndButton.onClick.AddListener(OnPlayerTurnEndButton);
+        }
     }
 
     private void StartNewRound()
@@ -187,13 +207,15 @@ public class GameTurnManager : MonoBehaviour
 
 
     // 질문 : 이 함수를 통해 점수 차 누적 값을 빨간색 슬라이드에 더하는 거면 디버그 보다는 실제로 값을 조정하는 게 좋을듯요.
+    
+    // 실제로 값을 조정한다는 말이 무슨 뜻인가요? 
     private void ApplyRoundScore(float playerRoundScore, float aiRoundScore)
     {
         int diff = Mathf.RoundToInt(Mathf.Abs(playerRoundScore - aiRoundScore));
 
         if (playerRoundScore > aiRoundScore)
         {
-            playerTotalScore += diff;
+            playerTotalScore += diff;//이런 값을 얘기하는 건가요?
             Debug.Log($"Player: {diff} points added");
         }
         else if (aiRoundScore > playerRoundScore)
@@ -280,6 +302,7 @@ public class GameTurnManager : MonoBehaviour
     }
 
     // 질문 : 이 값이 목표치에 대한 누적값 == 빨간색 슬라이드 바의 값인지?
+    //저는 그렇게 생각했어요. 아니면 백분율로 변환해서 표현할까요?
     private void UpdateScoreUI()
     {
         if (playerTotalScoreText != null)
@@ -300,6 +323,9 @@ public class GameTurnManager : MonoBehaviour
     // 예를들어 AI턴일 떄 플레이어의 카드움직임을 막고, 버튼을 비활성화 시킨다던지, 플레이어의 턴일 떄 AI의 행동을 막고
     // 플레이어가 먼저 결산 시 AI에게 배속을 걸고
     // 결산 페이즈일 떄는 양쪽 다 조작을 막는게 좋겟죠?
+    
+    //ai 배속은 제가 했어요
+    //다른 건 다 동의해요. 근데 ai 턴일 때는 어짜피 플레이어의 손에는 아무런 카드가 없으니 플레이어의 카드 움직임을 막는 건 추가할 필요 없지 않을까요?
     private void Update()
     {
         if (currentPhase != GamePhase.PlayerTurn) return;

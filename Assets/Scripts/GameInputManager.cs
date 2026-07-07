@@ -120,6 +120,7 @@ public class GameInputManager : MonoBehaviour
     }
 
     // 플레이어 턴 종료 → AI 턴으로
+    //질문: 혹시 한 라운드에 턴 종료 횟수를 제한두는건 어떤가요? 제한이 없으면 좋은거 뜰  때까지 카드 안내고 턴 엔드만 할 수 있지 않나요?
     public void OnTurnEnd()
     {
         if (gameTurnManager != null)
@@ -156,11 +157,13 @@ public class GameInputManager : MonoBehaviour
         Debug.Log("Button was clicked!");
     }
 
+
+
     // 결산 페이즈를 여기서 호출하는데, GameTurnManager에서도 결산페이즈를 호출하고 있음, 중복 계산으로 오류 발생 확률이 높아져요.
     // 지금 이 함수는 점수 계산과 UI 업데이트를 담당하는데, GameTurnManager에서 실제로 결산페이즈를 시작하는게 좋지 않나....
     // 어떻게 구조를 생각했냐면 GameTurnManager에서 결산페이즈를 시작하고, GameTurnManager는 현재 턴이 누구인지 알 수 있으니 그 값을 여기다가 넘겨주고 
     // 여기서는 UI 업데이트만 담당하는게 좋을듯요.
-    public void OnFinish()
+    private void OnFinish()
     {
         // 데이터 처리 + 점수 계산
         SettlementResult result = cardManager.Settle();

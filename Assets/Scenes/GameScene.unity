@@ -2164,6 +2164,8 @@ MonoBehaviour:
   playerTotalScoreText: {fileID: 0}
   aiTotalScoreText: {fileID: 0}
   phaseText: {fileID: 0}
+  stopButton: {fileID: 1767393212}
+  turnEndButton: {fileID: 531786067}
 --- !u!4 &666391990
 Transform:
   m_ObjectHideFlags: 0
