@@ -2459,6 +2459,8 @@ MonoBehaviour:
   playerTotalScoreText: {fileID: 0}
   aiTotalScoreText: {fileID: 0}
   phaseText: {fileID: 0}
+  playerScoreSlider: {fileID: 1718464396}
+  aiScoreSlider: {fileID: 1394242283}
   stopButton: {fileID: 1093045712}
   turnEndButton: {fileID: 531786067}
 --- !u!4 &666391990
@@ -2917,7 +2919,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardSpacing: 80
-  maxAngle: 30
+  maxAngle: 20
   arcHeight: 30
   flipArc: 1
   moveDuration: 0.3
