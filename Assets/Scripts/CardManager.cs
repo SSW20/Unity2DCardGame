@@ -239,19 +239,7 @@ public class CardManager : MonoBehaviour
         {
             int card = straight.Count;  // 스트레이트 카드 수
 
-            // sym = 스트레이트 카드 중 가장 많은 suit 개수, 3 미만이면 2 고정
-            Dictionary<CardSuit, int> suitCount = new Dictionary<CardSuit, int>();
-            foreach (var c in straight)
-            {
-                if (!suitCount.ContainsKey(c.suit)) suitCount[c.suit] = 0;
-                suitCount[c.suit]++;
-            }
-            int sym = 2;
-            foreach (var cnt in suitCount.Values)
-                if (cnt > sym) sym = cnt;
-
-            // str 계산
-            float str = card * (1f + (sym - 2) * 0.2f);
+            float str = card;
 
             // costStr = 스트레이트 카드 코스트 합산
             float costStr = 0f;

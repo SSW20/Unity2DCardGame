@@ -109,7 +109,10 @@ public class AIController : MonoBehaviour
             // 앞면으로 전환 후 슬롯으로 직행
             CardUI cardUI = cardObj.GetComponent<CardUI>();
             if (cardUI != null)
+            {
                 cardUI.FlipCard(true);
+                cardUI.useAnimation = false; // AI 필드 카드 호버 비활성화
+            }
             RectTransform rt = cardObj.GetComponent<RectTransform>();
             rt.anchorMin = new Vector2(0.5f, 0.5f);
             rt.anchorMax = new Vector2(0.5f, 0.5f);

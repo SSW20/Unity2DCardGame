@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class CardHoverManager : MonoBehaviour
 {
     private CardUI currentHovered;
+    public CardUI CurrentHovered => currentHovered;
     private List<CardUI> hitHandCards = new List<CardUI>();
 
     private float enterDist = 40f;

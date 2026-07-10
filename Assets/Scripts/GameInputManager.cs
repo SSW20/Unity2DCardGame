@@ -24,10 +24,15 @@ public class GameInputManager : MonoBehaviour
     [SerializeField] private Transform fieldSlotContainer;
 
     [SerializeField] private AIController aiController;
+    [SerializeField] private CardHoverManager cardHoverManager;
 
     [SerializeField] private TextMeshProUGUI playerScoreText;
 
     private bool isPlayerTurn = false;
+
+    private CardUI lastHovered;
+    private int lastFieldCount = -1;
+    private int lastGraveCount = -1;
 
     void Start()
     {
@@ -36,6 +41,8 @@ public class GameInputManager : MonoBehaviour
 
     void Update()
     {
+        UpdateScorePreview();
+
         if (Input.GetKeyDown(KeyCode.V))
         {
             if (gameTurnManager != null)
@@ -69,6 +76,48 @@ public class GameInputManager : MonoBehaviour
     }
 
 
+
+    private void UpdateScorePreview()
+    {
+        if (playerScoreText == null) return;
+
+        CardUI hovered = cardHoverManager?.CurrentHovered;
+        int fieldCount = cardManager.fieldList.Count;
+        int graveCount = cardManager.graveList.Count;
+
+        if (hovered == lastHovered && fieldCount == lastFieldCount && graveCount == lastGraveCount)
+            return;
+
+        lastHovered = hovered;
+        lastFieldCount = fieldCount;
+        lastGraveCount = graveCount;
+
+        List<PokerCardData> pool = new List<PokerCardData>();
+        pool.AddRange(cardManager.fieldList);
+        pool.AddRange(cardManager.graveList);
+
+        int emptySlots = GetEmptyPlayerSlots();
+
+        if (hovered != null && hovered.cardType == CardType.Hand)
+        {
+            pool.Add(hovered.pokerCardData);
+            emptySlots = Mathf.Max(0, emptySlots - 1); // 호버 카드가 슬롯 하나 차지한다고 가정
+        }
+        SettlementResult result = ScoreEvaluator.EvaluateAll(pool);
+        float score = cardManager.CalculateScore(result, emptySlots);
+
+        playerScoreText.text = $"Score: {Mathf.RoundToInt(score)}";
+    }
+
+    private int GetEmptyPlayerSlots()
+    {
+        int count = 0;
+        CardSlot[] allSlots = fieldSlotContainer.GetComponentsInChildren<CardSlot>();
+        foreach (var slot in allSlots)
+            if (slot.owner == SlotOwner.Player && !slot.IsOccupied)
+                count++;
+        return count;
+    }
 
     // 플레이어 턴 시작
     public void StartPlayerTurn()
