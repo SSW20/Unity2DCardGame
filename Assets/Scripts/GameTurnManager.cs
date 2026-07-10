@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,6 +10,7 @@ public enum TurnOwner
 
 public enum GamePhase
 {
+    Stop,
     PlayerTurn,
     AITurn,
     Settlement,
@@ -42,6 +44,23 @@ public class GameTurnManager : MonoBehaviour
     [SerializeField] private Button stopButton;
     [SerializeField] private Button turnEndButton;
 
+    [Header("Turn Banner")]
+    [SerializeField] private GameObject turnBannerObject;
+    [SerializeField] private Image turnBannerImage;
+    [SerializeField] private Sprite playerTurnSprite;
+    [SerializeField] private Sprite aiTurnSprite;
+    [SerializeField] private Sprite settlementSprite;
+    [SerializeField] private float turnBannerDuration = 2f;
+    [SerializeField] private float fastTurnBannerDuration = 1f;
+
+    [Header("Settlement Score Clash")]
+    [SerializeField] private SettlementScoreClashUI scoreClashUI;
+
+    // TODO : 디버그용 임시 코드, 실제 점수 계산이 확인되면 제거할 것
+    [Header("Debug")]
+    [SerializeField] private bool debugUseRandomClashScore = false;
+    [SerializeField] private Vector2 debugRandomScoreRange = new Vector2(50f, 500f);
+
     private TurnOwner currentTurn;
     private GamePhase currentPhase;
 
@@ -54,6 +73,10 @@ public class GameTurnManager : MonoBehaviour
     private void Start()
     {
         SetupButtons();
+
+        if (turnBannerObject != null)
+            turnBannerObject.SetActive(false);
+
         StartGame();
     }
 
@@ -103,6 +126,17 @@ public class GameTurnManager : MonoBehaviour
             return;
         }
 
+        StartCoroutine(StartPlayerTurnRoutine());
+    }
+
+    private IEnumerator StartPlayerTurnRoutine()
+    {
+        currentPhase = GamePhase.Stop;
+        UpdatePhaseUI();
+
+        float duration = aiStopped ? fastTurnBannerDuration : turnBannerDuration;
+        yield return ShowTurnBanner(playerTurnSprite, duration);
+
         currentPhase = GamePhase.PlayerTurn;
         UpdatePhaseUI();
 
@@ -119,11 +153,34 @@ public class GameTurnManager : MonoBehaviour
             return;
         }
 
-        currentPhase = GamePhase.AITurn;
+        StartCoroutine(StartAITurnRoutine());
+    }
+
+    private IEnumerator StartAITurnRoutine()
+    {
+        currentPhase = GamePhase.Stop;
         UpdatePhaseUI();
 
         bool fastMode = playerStopped;
+        float duration = fastMode ? fastTurnBannerDuration : turnBannerDuration;
+        yield return ShowTurnBanner(aiTurnSprite, duration);
+
+        currentPhase = GamePhase.AITurn;
+        UpdatePhaseUI();
+
         aiController.TakeTurn(OnAITurnFinished, fastMode);
+    }
+
+    private IEnumerator ShowTurnBanner(Sprite sprite, float duration)
+    {
+        if (turnBannerObject == null) yield break;
+
+        if (turnBannerImage != null && sprite != null)
+            turnBannerImage.sprite = sprite;
+
+        turnBannerObject.SetActive(true);
+        yield return new WaitForSeconds(duration);
+        turnBannerObject.SetActive(false);
     }
 
     public void OnPlayerTurnEndButton()
@@ -183,9 +240,18 @@ public class GameTurnManager : MonoBehaviour
         }
     }
 
-    // TODO : 결산페이즈에서의 딜레이가 필요
     private void StartSettlementPhase()
     {
+        StartCoroutine(StartSettlementPhaseRoutine());
+    }
+
+    private IEnumerator StartSettlementPhaseRoutine()
+    {
+        currentPhase = GamePhase.Stop;
+        UpdatePhaseUI();
+
+        yield return ShowTurnBanner(settlementSprite, turnBannerDuration);
+
         currentPhase = GamePhase.Settlement;
         UpdatePhaseUI();
 
@@ -206,6 +272,24 @@ public class GameTurnManager : MonoBehaviour
 
         gameInputManager.UpdateGraveVisual();
         aiController.UpdateAIGraveVisual();
+
+        if (scoreClashUI != null)
+        {
+            float clashPlayerScore = playerRoundScore;
+            float clashAiScore = aiRoundScore;
+
+            // 디버그용 임시 코드 : 실제 점수가 0이거나 계산이 안 될 때도 연출을 확인할 수 있게 랜덤값으로 대체
+            if (debugUseRandomClashScore)
+            {
+                clashPlayerScore = UnityEngine.Random.Range(debugRandomScoreRange.x, debugRandomScoreRange.y);
+                clashAiScore = UnityEngine.Random.Range(debugRandomScoreRange.x, debugRandomScoreRange.y);
+                Debug.Log($"[Debug] Clash test scores - Player: {clashPlayerScore:F0}, AI: {clashAiScore:F0}");
+            }
+
+            bool clashDone = false;
+            scoreClashUI.PlayClash(clashPlayerScore, clashAiScore, () => clashDone = true);
+            yield return new WaitUntil(() => clashDone);
+        }
 
         ApplyRoundScore(playerRoundScore, aiRoundScore);
     }
