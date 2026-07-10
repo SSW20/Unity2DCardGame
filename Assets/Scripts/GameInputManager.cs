@@ -113,7 +113,8 @@ public class GameInputManager : MonoBehaviour
             cardDragManager.cardManager = cardManager;
         }
 
-        newCard.transform.position = deckPanel.position;
+        // 덱 월드 좌표 → handPanel 로컬 좌표로 변환해서 시작 위치 설정
+        newCard.transform.localPosition = handPanel.InverseTransformPoint(deckPanel.position);
         newCard.transform.localScale = Vector3.one;
 
         handLayoutManager.UpdateLayout();
@@ -152,25 +153,18 @@ public class GameInputManager : MonoBehaviour
         }
     }
 
-    public void ButtonClicked()
-    {
-        Debug.Log("Button was clicked!");
-    }
-
 
 
     // 결산 페이즈를 여기서 호출하는데, GameTurnManager에서도 결산페이즈를 호출하고 있음, 중복 계산으로 오류 발생 확률이 높아져요.
     // 지금 이 함수는 점수 계산과 UI 업데이트를 담당하는데, GameTurnManager에서 실제로 결산페이즈를 시작하는게 좋지 않나....
     // 어떻게 구조를 생각했냐면 GameTurnManager에서 결산페이즈를 시작하고, GameTurnManager는 현재 턴이 누구인지 알 수 있으니 그 값을 여기다가 넘겨주고 
     // 여기서는 UI 업데이트만 담당하는게 좋을듯요.
-    private void OnFinish()
+    public void OnFinish()
     {
         // 데이터 처리 + 점수 계산
         SettlementResult result = cardManager.Settle();
         int blankSlots = GetEmptyAISlots().Count;
         float score = cardManager.CalculateScore(result, blankSlots);
-
-        Debug.Log($"Settlement score: {score}");
 
         // TODO: score를 실제 UI(점수판)에 반영
         if (playerScoreText != null)

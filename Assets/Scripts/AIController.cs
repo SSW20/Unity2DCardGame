@@ -14,6 +14,10 @@ public class AIController : MonoBehaviour
     [Header("Visual")]
     [SerializeField] private GameObject cardPrefab;
     [SerializeField] private Transform aiDeckPanel;
+    [SerializeField] private Transform aiHandPanel;
+    [SerializeField] private HandLayoutManager aiHandLayoutManager;
+
+    private List<GameObject> aiHandObjects = new List<GameObject>();
 
     [Header("AI Timing")]
     [SerializeField] private float thinkingDelay = 1.0f;
@@ -51,11 +55,12 @@ public class AIController : MonoBehaviour
         // AI 코스트 초기화
         aiCardManager.ResetAICost();
 
-        // 1. 카드 5장 뽑기
+        // 1. 카드 5장 뽑기 + 손패 UI 생성 (뒷면)
         for (int i = 0; i < 5; i++)
         {
             if (aiCardManager.pokerDeck.Count == 0) break;
-            aiCardManager.DrawCard(aiCardManager.pokerDeck);
+            PokerCardData drawn = aiCardManager.DrawCard(aiCardManager.pokerDeck);
+            yield return StartCoroutine(DrawCardToHand(drawn, delayScale));
         }
 
         yield return new WaitForSeconds(thinkingDelay * delayScale);
@@ -90,32 +95,28 @@ public class AIController : MonoBehaviour
             slotIndex++;
             placedCount++;
 
-            GameObject cardObj = Instantiate(cardPrefab, slot.transform);
-            cardObj.transform.position = aiDeckPanel.position;
-            cardObj.transform.localScale = Vector3.one;
+            // 손패에서 해당 카드 오브젝트 찾기
+            GameObject cardObj = FindHandCardObject(card);
+            if (cardObj == null) continue;
 
+            aiHandObjects.Remove(cardObj);
+            UpdateHandLayout();
+
+            // 앞면 뒤집기
             CardUI cardUI = cardObj.GetComponent<CardUI>();
             if (cardUI != null)
-            {
-                cardUI.SetPokerData(card);
-                cardUI.FlipCard(true); // 카드 앞면 표시
-            }
+                yield return StartCoroutine(FlipToFront(cardUI, 0.15f * delayScale));
 
-            CardDragManager dragManager = cardObj.GetComponent<CardDragManager>();
-            if (dragManager != null) Destroy(dragManager);
-
+            // 슬롯으로 이동
+            cardObj.transform.SetParent(slot.transform, true);
             RectTransform rt = cardObj.GetComponent<RectTransform>();
             rt.anchorMin = new Vector2(0.5f, 0.5f);
             rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot = new Vector2(0.5f, 0.5f);
 
-            Sequence seq = DOTween.Sequence();
-            seq.Append(cardObj.transform.DOMove(slot.transform.position, 0.3f));
-            seq.AppendCallback(() =>
-            {
-                rt.anchoredPosition = Vector2.zero;
-                rt.localRotation = Quaternion.identity;
-            });
+            yield return cardObj.transform.DOMove(slot.transform.position, 0.3f * delayScale).WaitForCompletion();
+            rt.anchoredPosition = Vector2.zero;
+            rt.localRotation = Quaternion.identity;
 
             slot.SetCard(cardObj);
             aiCardManager.MoveCard(card, aiCardManager.fieldList);
@@ -126,7 +127,7 @@ public class AIController : MonoBehaviour
         Debug.Log($"AI placed {placedCount} cards (Remaining cost: {aiCardManager.GetAICurrentCost()}/{aiCardManager.GetMaxCost()})");
 
         // 4. 안 쓴 손패 전부 덱으로 반납
-        DiscardAIHand();
+        yield return StartCoroutine(DiscardAIHand(delayScale));
 
         // 5. AI가 Turn End 할지 Stop 할지 결정
         yield return new WaitForSeconds(beforeSettleDelay * delayScale);
@@ -150,10 +151,86 @@ public class AIController : MonoBehaviour
         return result;
     }
 
-    // AI 손패를 덱으로 반납
-    private void DiscardAIHand()
+    // AI 손패를 덱으로 반납 + 손패 UI 제거
+    private IEnumerator DiscardAIHand(float delayScale)
     {
+        List<GameObject> toDiscard = new List<GameObject>(aiHandObjects);
+        aiHandObjects.Clear();
+
+        foreach (var obj in toDiscard)
+        {
+            if (obj == null) continue;
+            CardUI cardUI = obj.GetComponent<CardUI>();
+            if (cardUI != null) cardUI.useAnimation = false;
+
+            Sequence seq = DOTween.Sequence();
+            seq.Append(obj.transform.DOMove(aiDeckPanel.position, 0.2f).SetEase(Ease.InCubic));
+            seq.Join(obj.transform.DOScale(Vector3.zero, 0.2f));
+            seq.AppendCallback(() => Destroy(obj));
+
+            yield return new WaitForSeconds(0.05f * delayScale);
+        }
+
         aiCardManager.RemoveCardAll(aiCardManager.pokerDeck);
+    }
+
+    // 덱 → 손패 애니메이션 (뒷면)
+    private IEnumerator DrawCardToHand(PokerCardData card, float delayScale)
+    {
+        if (aiHandPanel == null) yield break;
+
+        GameObject cardObj = Instantiate(cardPrefab, aiHandPanel);
+        cardObj.transform.position = aiDeckPanel.position;
+        cardObj.transform.localScale = Vector3.zero;
+
+        CardUI cardUI = cardObj.GetComponent<CardUI>();
+        if (cardUI != null)
+        {
+            cardUI.SetPokerData(card);
+            cardUI.FlipCard(false); // 뒷면
+            cardUI.useAnimation = false;
+        }
+
+        CardDragManager drag = cardObj.GetComponent<CardDragManager>();
+        if (drag != null) Destroy(drag);
+
+        aiHandObjects.Add(cardObj);
+
+        // 덱에서 튀어나오는 느낌
+        yield return cardObj.transform.DOScale(Vector3.one, 0.15f).SetEase(Ease.OutBack).WaitForCompletion();
+
+        // 손패 위치로 이동
+        UpdateHandLayout();
+
+        yield return new WaitForSeconds(0.1f * delayScale);
+    }
+
+    // 카드 앞면 뒤집기 (스케일로 플립 효과)
+    private IEnumerator FlipToFront(CardUI cardUI, float duration)
+    {
+        Transform t = cardUI.transform;
+        yield return t.DOScaleX(0f, duration * 0.5f).WaitForCompletion();
+        cardUI.FlipCard(true);
+        yield return t.DOScaleX(1f, duration * 0.5f).WaitForCompletion();
+    }
+
+    // 손패에서 PokerCardData로 오브젝트 찾기
+    private GameObject FindHandCardObject(PokerCardData card)
+    {
+        foreach (var obj in aiHandObjects)
+        {
+            if (obj == null) continue;
+            CardUI ui = obj.GetComponent<CardUI>();
+            if (ui != null && ui.pokerCardData.suit == card.suit && ui.pokerCardData.rank == card.rank)
+                return obj;
+        }
+        return null;
+    }
+
+    private void UpdateHandLayout()
+    {
+        if (aiHandLayoutManager != null)
+            aiHandLayoutManager.UpdateLayout();
     }
 
     private bool DecideStopOrTurnEnd(int remainingEmptySlots)
