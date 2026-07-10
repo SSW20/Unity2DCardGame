@@ -35,6 +35,8 @@ public class GameTurnManager : MonoBehaviour
     [SerializeField] private TMP_Text playerTotalScoreText;
     [SerializeField] private TMP_Text aiTotalScoreText;
     [SerializeField] private TMP_Text phaseText;
+    [SerializeField] private Slider playerScoreSlider;
+    [SerializeField] private Slider aiScoreSlider;
 
     [Header("Buttons")]
     [SerializeField] private Button stopButton;
@@ -202,6 +204,9 @@ public class GameTurnManager : MonoBehaviour
         ClearFieldVisuals(SlotOwner.Player);
         ClearFieldVisuals(SlotOwner.Enemy);
 
+        gameInputManager.UpdateGraveVisual();
+        aiController.UpdateAIGraveVisual();
+
         ApplyRoundScore(playerRoundScore, aiRoundScore);
     }
 
@@ -310,6 +315,12 @@ public class GameTurnManager : MonoBehaviour
 
         if (aiTotalScoreText != null)
             aiTotalScoreText.text = $"AI: {aiTotalScore}";
+
+        if (playerScoreSlider != null)
+            playerScoreSlider.value = Mathf.Clamp01((float)playerTotalScore / targetScore);
+
+        if (aiScoreSlider != null)
+            aiScoreSlider.value = Mathf.Clamp01((float)aiTotalScore / targetScore);
     }
 
     // 질문 : 이 값이 현재 턴의 상태를 나타내는 값이라면 어디에? 

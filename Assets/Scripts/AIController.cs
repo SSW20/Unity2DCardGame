@@ -15,9 +15,11 @@ public class AIController : MonoBehaviour
     [SerializeField] private GameObject cardPrefab;
     [SerializeField] private Transform aiDeckPanel;
     [SerializeField] private Transform aiHandPanel;
+    [SerializeField] private Transform aiGraveyardPanel;
     [SerializeField] private HandLayoutManager aiHandLayoutManager;
 
     private List<GameObject> aiHandObjects = new List<GameObject>();
+    private List<GameObject> aiGraveVisualStack = new List<GameObject>();
 
     [Header("AI Timing")]
     [SerializeField] private float thinkingDelay = 1.0f;
@@ -81,7 +83,6 @@ public class AIController : MonoBehaviour
             // AI 코스트 체크
             if (!aiCardManager.CanAIAffordCard(card))
             {
-                Debug.Log($"AI: Not enough cost to place card {card.rank}");
                 continue;
             }
 
@@ -100,15 +101,15 @@ public class AIController : MonoBehaviour
             if (cardObj == null) continue;
 
             aiHandObjects.Remove(cardObj);
+
+            // 부모를 슬롯으로 먼저 변경해야 UpdateHandLayout이 이 카드 트윈을 건드리지 않음
+            cardObj.transform.SetParent(slot.transform, true);
             UpdateHandLayout();
 
-            // 앞면 뒤집기
+            // 앞면으로 전환 후 슬롯으로 직행
             CardUI cardUI = cardObj.GetComponent<CardUI>();
             if (cardUI != null)
-                yield return StartCoroutine(FlipToFront(cardUI, 0.15f * delayScale));
-
-            // 슬롯으로 이동
-            cardObj.transform.SetParent(slot.transform, true);
+                cardUI.FlipCard(true);
             RectTransform rt = cardObj.GetComponent<RectTransform>();
             rt.anchorMin = new Vector2(0.5f, 0.5f);
             rt.anchorMax = new Vector2(0.5f, 0.5f);
@@ -172,7 +173,9 @@ public class AIController : MonoBehaviour
         }
 
         aiCardManager.RemoveCardAll(aiCardManager.pokerDeck);
+        UpdateAIGraveVisual();
     }
+
 
     // 덱 → 손패 애니메이션 (뒷면)
     private IEnumerator DrawCardToHand(PokerCardData card, float delayScale)
@@ -180,26 +183,24 @@ public class AIController : MonoBehaviour
         if (aiHandPanel == null) yield break;
 
         GameObject cardObj = Instantiate(cardPrefab, aiHandPanel);
-        cardObj.transform.position = aiDeckPanel.position;
-        cardObj.transform.localScale = Vector3.zero;
 
         CardUI cardUI = cardObj.GetComponent<CardUI>();
         if (cardUI != null)
         {
             cardUI.SetPokerData(card);
             cardUI.FlipCard(false); // 뒷면
-            cardUI.useAnimation = false;
         }
 
         CardDragManager drag = cardObj.GetComponent<CardDragManager>();
         if (drag != null) Destroy(drag);
 
+        // 플레이어와 동일하게 덱 위치에서 시작
+        cardObj.transform.position = aiDeckPanel.position;
+        cardObj.transform.localScale = Vector3.one;
+
         aiHandObjects.Add(cardObj);
 
-        // 덱에서 튀어나오는 느낌
-        yield return cardObj.transform.DOScale(Vector3.one, 0.15f).SetEase(Ease.OutBack).WaitForCompletion();
-
-        // 손패 위치로 이동
+        // 손패 부채꼴 위치로 이동
         UpdateHandLayout();
 
         yield return new WaitForSeconds(0.1f * delayScale);
@@ -212,6 +213,37 @@ public class AIController : MonoBehaviour
         yield return t.DOScaleX(0f, duration * 0.5f).WaitForCompletion();
         cardUI.FlipCard(true);
         yield return t.DOScaleX(1f, duration * 0.5f).WaitForCompletion();
+    }
+
+    public void UpdateAIGraveVisual()
+    {
+        int actualCount = aiCardManager.graveList.Count;
+        int visualCount = actualCount == 0 ? 0 : (actualCount / 2) + 1;
+
+        foreach (var obj in aiGraveVisualStack)
+            Destroy(obj);
+        aiGraveVisualStack.Clear();
+
+        if (aiGraveyardPanel == null) return;
+
+        for (int i = 0; i < visualCount; i++)
+        {
+            GameObject card = Instantiate(cardPrefab, aiGraveyardPanel);
+            RectTransform rt = card.GetComponent<RectTransform>();
+
+            rt.localRotation = i == 0
+                ? Quaternion.identity
+                : Quaternion.Euler(0, 0, UnityEngine.Random.Range(-5f, 5f));
+            rt.localScale = Vector3.one;
+
+            CardUI cardUI = card.GetComponent<CardUI>();
+            if (cardUI != null) cardUI.useAnimation = false;
+
+            CardDragManager drag = card.GetComponent<CardDragManager>();
+            if (drag != null) Destroy(drag);
+
+            aiGraveVisualStack.Add(card);
+        }
     }
 
     // 손패에서 PokerCardData로 오브젝트 찾기

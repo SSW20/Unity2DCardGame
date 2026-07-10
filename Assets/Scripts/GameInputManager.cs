@@ -204,7 +204,7 @@ public class GameInputManager : MonoBehaviour
 
     private List<GameObject> graveVisualStack = new List<GameObject>();
 
-    private void UpdateGraveVisual()
+    public void UpdateGraveVisual()
     {
         int actualCount = cardManager.graveList.Count;
         int visualCount = actualCount == 0 ? 0 : (actualCount / 2) + 1;

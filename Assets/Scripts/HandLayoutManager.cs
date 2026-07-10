@@ -8,6 +8,7 @@ public class HandLayoutManager : MonoBehaviour
     [SerializeField] private float cardSpacing = 80f;
     [SerializeField] private float maxAngle = 20f;
     [SerializeField] private float arcHeight = 30f;
+    [SerializeField] private bool flipArc = false; // AI 손패처럼 반대 방향 부채꼴
 
     [Header("Aniamation")]
     [SerializeField] private float moveDuration  = 0.3f;
@@ -47,8 +48,8 @@ public class HandLayoutManager : MonoBehaviour
             float t = count == 1 ? 0 : (float)i / (count - 1) - 0.5f;
 
             float x = t * cardSpacing * count;
-            float y = -(t * t) * arcHeight * count;
-            float angle = -t * maxAngle * 2;
+            float y = (flipArc ? 1 : -1) * (t * t) * arcHeight * count;
+            float angle = (flipArc ? 1 : -1) * t * maxAngle * 2;
 
             Vector3 targetPos = new Vector3(x, y, 0);
             Quaternion targetRot = Quaternion.Euler(0, 0, angle);
