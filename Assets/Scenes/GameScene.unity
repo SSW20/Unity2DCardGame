@@ -2472,7 +2472,7 @@ MonoBehaviour:
   fastTurnBannerDuration: 1
   scoreClashUI: {fileID: 1369545611}
   debugUseRandomClashScore: 1
-  debugRandomScoreRange: {x: 50, y: 500}
+  debugRandomScoreRange: {x: 0, y: 0}
 --- !u!4 &666391990
 Transform:
   m_ObjectHideFlags: 0
@@ -4537,17 +4537,17 @@ MonoBehaviour:
   aiStartAnchoredPos: {x: 0, y: 600}
   centerAnchoredPos: {x: 0, y: 0}
   contactGap: 90
-  growDuration: 0.5
-  growTargetScale: 1.3
-  impactPunchStrength: 0.5
-  impactDuration: 0.15
-  collideDuration: 0.15
-  shakeStrength: 25
-  shakeVibrato: 12
-  pushDuration: 0.9
-  winnerAdvanceRatio: 0.35
+  growDuration: 0.3
+  growTargetScale: 2
+  impactPunchStrength: 2
+  impactDuration: 1
+  pushDuration: 2
+  winnerAdvanceRatio: 0.7
+  loserKnockbackMultiplier: 2
+  hitReactionScale: 1.4
+  hitReactionDuration: 0.1
   winPunchDuration: 0.4
-  endHoldDuration: 0.3
+  endHoldDuration: 0.5
 --- !u!224 &1369545612
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4647,7 +4647,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 0}
   m_FillRect: {fileID: 876061761}
   m_HandleRect: {fileID: 0}
@@ -6150,7 +6150,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 0}
   m_FillRect: {fileID: 1987862220}
   m_HandleRect: {fileID: 0}
