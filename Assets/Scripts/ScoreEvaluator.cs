@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 public struct SettlementResult
 {
@@ -7,6 +7,10 @@ public struct SettlementResult
     public List<List<PokerCardData>> straights;   
 
     public HashSet<PokerCardData> usedCards;
+
+    // 이번 결산에서 기존 필드 카드 중 족보에 사용되지 않아
+    // 새로 무덤으로 이동하는 카드 수
+    public int newGraveCardCount;
 }
 
 public static class ScoreEvaluator
@@ -18,7 +22,8 @@ public static class ScoreEvaluator
             triples = new List<List<PokerCardData>>(),
             fourOfAKinds = new List<List<PokerCardData>>(),
             straights = new List<List<PokerCardData>>(),
-            usedCards = new HashSet<PokerCardData>()
+            usedCards = new HashSet<PokerCardData>(),
+            newGraveCardCount = 0
         };
 
         Dictionary<int, List<PokerCardData>> rankGroups = BuildRankGroups(pool);
@@ -109,5 +114,23 @@ public static class ScoreEvaluator
                 }
             }
         }
+    }
+
+    public static int CountUnusedFieldCards(
+        List<PokerCardData> fieldCards,
+        HashSet<PokerCardData> usedCards)
+    {
+        if (fieldCards == null || fieldCards.Count == 0)
+            return 0;
+
+        int count = 0;
+
+        foreach (PokerCardData card in fieldCards)
+        {
+            if (usedCards == null || !usedCards.Contains(card))
+                count++;
+        }
+
+        return count;
     }
 }

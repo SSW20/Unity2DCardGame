@@ -98,14 +98,26 @@ public class GameInputManager : MonoBehaviour
         pool.AddRange(cardManager.fieldList);
         pool.AddRange(cardManager.graveList);
 
+        // 무덤 카드 특전의 미리보기 계산에는
+        // 기존 무덤이 아니라 현재 필드에 놓인 카드만 사용한다.
+        List<PokerCardData> previewFieldCards =
+            new List<PokerCardData>(cardManager.fieldList);
+
         int emptySlots = GetEmptyPlayerSlots();
 
         if (hovered != null && hovered.cardType == CardType.Hand)
         {
             pool.Add(hovered.pokerCardData);
+            previewFieldCards.Add(hovered.pokerCardData);
             emptySlots = Mathf.Max(0, emptySlots - 1); // 호버 카드가 슬롯 하나 차지한다고 가정
         }
+
         SettlementResult result = ScoreEvaluator.EvaluateAll(pool);
+        result.newGraveCardCount =
+            ScoreEvaluator.CountUnusedFieldCards(
+                previewFieldCards,
+                result.usedCards);
+
         float score = cardManager.CalculateScore(result, emptySlots);
 
         playerScoreText.text = $"Score: {Mathf.RoundToInt(score)}";

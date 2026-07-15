@@ -328,7 +328,12 @@ public class AIController : MonoBehaviour
             testPool.AddRange(combo);
 
             SettlementResult result = ScoreEvaluator.EvaluateAll(testPool);
-            int blankSlots = GetEmptyAISlots().Count - combo.Count; 
+            result.newGraveCardCount =
+                ScoreEvaluator.CountUnusedFieldCards(
+                    testPool,
+                    result.usedCards);
+
+            int blankSlots = GetEmptyAISlots().Count - combo.Count;
             float score = aiCardManager.CalculateScore(result, blankSlots);
 
             if (score > bestScore)

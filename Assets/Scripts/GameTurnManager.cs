@@ -43,6 +43,10 @@ public class GameTurnManager : MonoBehaviour
     [SerializeField] private Slider playerScoreSlider;
     [SerializeField] private Slider aiScoreSlider;
 
+    [Header("Perk Debug UI (Optional)")]
+    [SerializeField] private TMP_Text roundText;
+    [SerializeField] private TMP_Text aiPerkText;
+
     [Header("Buttons")]
     [SerializeField] private Button stopButton;
     [SerializeField] private Button turnEndButton;
@@ -77,7 +81,10 @@ public class GameTurnManager : MonoBehaviour
 
     private int playerTotalScore = 0;
     private int aiTotalScore = 0;
+    private int currentRound = 0;
     private Text readableTurnBannerText;
+
+    public int CurrentRound => currentRound;
 
     private void Awake()
     {
@@ -96,6 +103,14 @@ public class GameTurnManager : MonoBehaviour
 
     private void BeginGameSetup()
     {
+        // 씬이 처음 시작될 때만 특전 데이터를 초기화한다.
+        // 이후 기존 시작 전 특전 선택창의 선택 결과는 StartGame()에서 지우지 않는다.
+        if (playerCardManager != null)
+            playerCardManager.ResetPerks();
+
+        if (aiCardManager != null)
+            aiCardManager.ResetPerks();
+
         if (specialSelectPanel == null) { StartGame(); return; }
         specialSelectPanel.OnSpecialSelected = _ => StartGame();
         specialSelectPanel.Show(new System.Collections.Generic.List<(string name, string desc)>
@@ -112,8 +127,12 @@ public class GameTurnManager : MonoBehaviour
     {
         playerTotalScore = 0;
         aiTotalScore = 0;
+        currentRound = 0;
 
+        // 기존 시작 전 특전 선택창의 결과와 충돌하지 않도록
+        // StartGame()에서는 플레이어/AI 특전 목록을 초기화하지 않는다.
         UpdateScoreUI();
+        UpdatePerkDebugUI();
         StartNewRound();
     }
 
@@ -137,8 +156,29 @@ public class GameTurnManager : MonoBehaviour
         playerStopped = false;
         aiStopped = false;
 
+        currentRound++;
+
         if (aiController != null)
             aiController.ResetRoundState();
+
+        // AI는 매 라운드 시작 시 중복되지 않은 특전 자동 선택
+        if (aiCardManager != null && currentRound <= CardManager.MaxPerkCount)
+        {
+            if (aiCardManager.TryAddRandomPerk(out PerkType selectedPerk))
+            {
+                Debug.Log(
+                    $"[AI Perk] Round {currentRound}: "
+                    + $"{PerkCatalog.GetName(selectedPerk)} 획득");
+            }
+            else
+            {
+                Debug.LogWarning(
+                    $"[AI Perk] Round {currentRound}: "
+                    + "추가로 선택할 수 있는 특전이 없습니다.");
+            }
+        }
+
+        UpdatePerkDebugUI();
 
         currentTurn = TurnOwner.Player;
         StartPlayerTurn();
@@ -472,6 +512,18 @@ public class GameTurnManager : MonoBehaviour
 
     // 질문 : 이 값이 목표치에 대한 누적값 == 빨간색 슬라이드 바의 값인지?
     //저는 그렇게 생각했어요. 아니면 백분율로 변환해서 표현할까요?
+    private void UpdatePerkDebugUI()
+    {
+        if (roundText != null)
+            roundText.text = $"Round {currentRound}";
+
+        if (aiPerkText != null && aiCardManager != null)
+        {
+            aiPerkText.text =
+                $"AI Perks\n{PerkCatalog.JoinNames(aiCardManager.OwnedPerks)}";
+        }
+    }
+
     private void UpdateScoreUI()
     {
         if (playerTotalScoreText != null)

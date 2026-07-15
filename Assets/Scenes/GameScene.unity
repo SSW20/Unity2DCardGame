@@ -738,6 +738,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxCostPerTurn: 21
+  ownedPerks: 
   pokerDeck: []
   playerHand: []
   fieldList: []
@@ -2470,6 +2471,8 @@ MonoBehaviour:
   phaseText: {fileID: 0}
   playerScoreSlider: {fileID: 1718464396}
   aiScoreSlider: {fileID: 1394242283}
+  roundText: {fileID: 0}
+  aiPerkText: {fileID: 0}
   stopButton: {fileID: 1093045712}
   turnEndButton: {fileID: 531786067}
   turnBannerObject: {fileID: 1909341937}
@@ -3973,6 +3976,53 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1106920861}
   m_CullTransparentMesh: 1
+--- !u!1 &1109398979
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1109398981}
+  - component: {fileID: 1109398980}
+  m_Layer: 0
+  m_Name: xmrwjs
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1109398980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1109398979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 672a3e721a91e7443814cd3c0ced33cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerCardManager: {fileID: 207791754}
+  specialSelectPanel: {fileID: 1957350225}
+  playerPerkText: {fileID: 0}
+--- !u!4 &1109398981
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1109398979}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1149968026
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4314,6 +4364,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxCostPerTurn: 21
+  ownedPerks: 
   pokerDeck: []
   playerHand: []
   fieldList: []
@@ -5421,7 +5472,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 플레이어 턴
+  m_text: "\uD50C\uB808\uC774\uC5B4 \uD134"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -7089,7 +7140,8 @@ MonoBehaviour:
   cardContainer: {fileID: 1517797744}
   cardPrefab: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
   specialSlotContainer: {fileID: 302995025}
-  isActive: 0
+  candidateCardSize: {x: 180, y: 260}
+  flipDuration: 0.35
 --- !u!1 &1961512936
 GameObject:
   m_ObjectHideFlags: 0
@@ -7646,3 +7698,4 @@ SceneRoots:
   - {fileID: 1287922616}
   - {fileID: 2032059630}
   - {fileID: 666391990}
+  - {fileID: 1109398981}
