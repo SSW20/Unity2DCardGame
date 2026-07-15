@@ -73,9 +73,9 @@ public class CardHoverManager : MonoBehaviour
         if (currentHovered != null)
             currentHovered.SetHover(true);
 
-        if (currentHovered != null && currentHovered.cardType == CardType.Special)
+        if (descriptionPanel != null && currentHovered != null && currentHovered.cardType == CardType.Special)
             descriptionPanel.Show(currentHovered);
-        else
+        else if (descriptionPanel != null)
             descriptionPanel.Hide();
 
     }

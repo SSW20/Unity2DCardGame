@@ -65,7 +65,9 @@ public class GameInputManager : MonoBehaviour
             {
                 ("Flame Boost", "Next card damage x2"),
                 ("Ice Shield", "Reduce damage by 50%"),
-                ("Chain Attack", "Use 2 additional cards next turn")
+                ("Chain Attack", "Use 2 additional cards next turn"),
+                ("Lucky Draw", "Draw one extra card at the start of your turn"),
+                ("Second Wind", "Recover once when your score falls behind")
             });
         }
 

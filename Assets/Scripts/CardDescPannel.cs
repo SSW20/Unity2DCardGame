@@ -12,6 +12,11 @@ public class CardDescPanel : MonoBehaviour
 
     void Awake()
     {
+        EnsureInitialized();
+    }
+
+    private void EnsureInitialized()
+    {
         rectTransform = GetComponent<RectTransform>();
         canvasGroup = GetComponent<CanvasGroup>();
         if (canvasGroup == null)
@@ -24,11 +29,14 @@ public class CardDescPanel : MonoBehaviour
 
     public void Show(CardUI card)
     {
-        Debug.Log($"Show called: {card.cardName}");
-        nameText.text = card.cardName;
-        descText.text = card.cardDescription;
+        EnsureInitialized();
+        if (card == null || rectTransform == null || canvasGroup == null) return;
 
-        PositionNextTo(card.GetComponent<RectTransform>());
+        Debug.Log($"Show called: {card.cardName}");
+        if (nameText != null) nameText.text = card.cardName;
+        if (descText != null) descText.text = card.cardDescription;
+
+        PositionNextTo(card.transform as RectTransform);
         canvasGroup.alpha = 1f;
     }
 
@@ -39,6 +47,8 @@ public class CardDescPanel : MonoBehaviour
 
     private void PositionNextTo(RectTransform cardRect)
     {
+        if (cardRect == null || rectTransform == null) return;
+
         float cardHalfWidth = cardRect.rect.width * 0.5f * cardRect.lossyScale.x;
         float panelHalfWidth = rectTransform.rect.width * 0.5f;
 

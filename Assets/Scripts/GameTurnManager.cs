@@ -25,6 +25,9 @@ public class GameTurnManager : MonoBehaviour
     [SerializeField] private CardManager playerCardManager;
     [SerializeField] private CardManager aiCardManager;
 
+    [Header("Pre-game Special Selection")]
+    [SerializeField] private SpecialSelectPanel specialSelectPanel;
+
     //[Header("Field Slot Containers")]
     //[SerializeField] private Transform playerFieldSlotContainer;
     //[SerializeField] private Transform aiFieldSlotContainer;
@@ -47,11 +50,16 @@ public class GameTurnManager : MonoBehaviour
     [Header("Turn Banner")]
     [SerializeField] private GameObject turnBannerObject;
     [SerializeField] private Image turnBannerImage;
-    [SerializeField] private Sprite playerTurnSprite;
-    [SerializeField] private Sprite aiTurnSprite;
-    [SerializeField] private Sprite settlementSprite;
+    [SerializeField] private TMP_Text turnBannerText;
+    [SerializeField] private Sprite turnBannerFrameSprite;
     [SerializeField] private float turnBannerDuration = 2f;
     [SerializeField] private float fastTurnBannerDuration = 1f;
+
+    [Header("Dealer Expression")]
+    [SerializeField] private Image dealerImage;
+    [SerializeField] private Sprite dealerDefaultSprite;
+    [SerializeField] private Sprite dealerSmileSprite;
+    [SerializeField] private Sprite dealerAnnoyedSprite;
 
     [Header("Settlement Score Clash")]
     [SerializeField] private SettlementScoreClashUI scoreClashUI;
@@ -69,6 +77,12 @@ public class GameTurnManager : MonoBehaviour
 
     private int playerTotalScore = 0;
     private int aiTotalScore = 0;
+    private Text readableTurnBannerText;
+
+    private void Awake()
+    {
+        CreateReadableTurnBannerText();
+    }
 
     private void Start()
     {
@@ -77,7 +91,21 @@ public class GameTurnManager : MonoBehaviour
         if (turnBannerObject != null)
             turnBannerObject.SetActive(false);
 
-        StartGame();
+        BeginGameSetup();
+    }
+
+    private void BeginGameSetup()
+    {
+        if (specialSelectPanel == null) { StartGame(); return; }
+        specialSelectPanel.OnSpecialSelected = _ => StartGame();
+        specialSelectPanel.Show(new System.Collections.Generic.List<(string name, string desc)>
+        {
+            ("Flame Boost", "Your next card deals double damage."),
+            ("Ice Shield", "Reduce incoming damage by 50%."),
+            ("Chain Attack", "Play two additional cards next turn."),
+            ("Lucky Draw", "Draw one extra card at the start of your turn."),
+            ("Second Wind", "Recover once when your score falls behind.")
+        });
     }
 
     public void StartGame()
@@ -135,7 +163,7 @@ public class GameTurnManager : MonoBehaviour
         UpdatePhaseUI();
 
         float duration = aiStopped ? fastTurnBannerDuration : turnBannerDuration;
-        yield return ShowTurnBanner(playerTurnSprite, duration);
+        yield return ShowTurnBanner("플레이어 턴", duration);
 
         currentPhase = GamePhase.PlayerTurn;
         UpdatePhaseUI();
@@ -161,9 +189,11 @@ public class GameTurnManager : MonoBehaviour
         currentPhase = GamePhase.Stop;
         UpdatePhaseUI();
 
+        ResetDealerExpression();
+
         bool fastMode = playerStopped;
         float duration = fastMode ? fastTurnBannerDuration : turnBannerDuration;
-        yield return ShowTurnBanner(aiTurnSprite, duration);
+        yield return ShowTurnBanner("AI 턴", duration);
 
         currentPhase = GamePhase.AITurn;
         UpdatePhaseUI();
@@ -171,16 +201,47 @@ public class GameTurnManager : MonoBehaviour
         aiController.TakeTurn(OnAITurnFinished, fastMode);
     }
 
-    private IEnumerator ShowTurnBanner(Sprite sprite, float duration)
+    private IEnumerator ShowTurnBanner(string message, float duration)
     {
         if (turnBannerObject == null) yield break;
 
-        if (turnBannerImage != null && sprite != null)
-            turnBannerImage.sprite = sprite;
+        if (turnBannerImage != null && turnBannerFrameSprite != null)
+            turnBannerImage.sprite = turnBannerFrameSprite;
+
+        if (readableTurnBannerText != null)
+            readableTurnBannerText.text = message;
+        else if (turnBannerText != null)
+            turnBannerText.text = message;
 
         turnBannerObject.SetActive(true);
         yield return new WaitForSeconds(duration);
         turnBannerObject.SetActive(false);
+    }
+
+    private void CreateReadableTurnBannerText()
+    {
+        if (turnBannerObject == null) return;
+
+        // 현재 TMP 폰트에는 한글 글리프가 없어 Windows의 한글 시스템 폰트를 사용한다.
+        if (turnBannerText != null) turnBannerText.gameObject.SetActive(false);
+
+        GameObject textObject = new GameObject("Turn Banner Korean Text", typeof(RectTransform), typeof(Text));
+        textObject.transform.SetParent(turnBannerObject.transform, false);
+
+        RectTransform rect = textObject.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = new Vector2(40f, 25f);
+        rect.offsetMax = new Vector2(-40f, -25f);
+
+        readableTurnBannerText = textObject.GetComponent<Text>();
+        readableTurnBannerText.font = Font.CreateDynamicFontFromOSFont("Malgun Gothic", 44)
+            ?? Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        readableTurnBannerText.fontSize = 44;
+        readableTurnBannerText.fontStyle = FontStyle.Bold;
+        readableTurnBannerText.alignment = TextAnchor.MiddleCenter;
+        readableTurnBannerText.color = Color.white;
+        readableTurnBannerText.raycastTarget = false;
     }
 
     public void OnPlayerTurnEndButton()
@@ -250,7 +311,7 @@ public class GameTurnManager : MonoBehaviour
         currentPhase = GamePhase.Stop;
         UpdatePhaseUI();
 
-        yield return ShowTurnBanner(settlementSprite, turnBannerDuration);
+        yield return ShowTurnBanner("정산 중", turnBannerDuration);
 
         currentPhase = GamePhase.Settlement;
         UpdatePhaseUI();
@@ -304,21 +365,40 @@ public class GameTurnManager : MonoBehaviour
 
         if (playerRoundScore > aiRoundScore)
         {
+            SetDealerExpression(dealerAnnoyedSprite);
             playerTotalScore += diff;//이런 값을 얘기하는 건가요?
             Debug.Log($"Player: {diff} points added");
         }
         else if (aiRoundScore > playerRoundScore)
         {
+            SetDealerExpression(dealerSmileSprite);
             aiTotalScore += diff;
             Debug.Log($"AI: {diff} points added");
         }
         else
         {
+            ResetDealerExpression();
             Debug.Log("No points added.");
         }
 
         UpdateScoreUI();
         CheckGameOver();
+    }
+
+    private void SetDealerExpression(Sprite expression)
+    {
+        if (dealerImage == null || expression == null)
+        {
+            Debug.LogWarning("Dealer expression is not assigned in GameTurnManager.");
+            return;
+        }
+
+        dealerImage.sprite = expression;
+    }
+
+    private void ResetDealerExpression()
+    {
+        SetDealerExpression(dealerDefaultSprite);
     }
 
     private void CheckGameOver()

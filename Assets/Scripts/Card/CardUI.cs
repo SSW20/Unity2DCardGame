@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using DG.Tweening;
+using TMPro;
 
 public enum CardType
 {
@@ -39,6 +40,8 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
     private Vector3 originalScale;
     private Vector3 targetScale;
     private Color originalColor;
+    private Image cardImage;
+    private TMP_Text specialText;
 
     public Vector3 homeLocalPosition;
     public Quaternion homeLocalRotation;
@@ -61,6 +64,10 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
     void Awake()
     {
         originalIndex = transform.GetSiblingIndex();
+        originalScale = transform.localScale;
+        targetScale = originalScale;
+        cardImage = GetComponent<Image>();
+        if (cardImage != null) originalColor = cardImage.color;
     }
 
     void Start()
@@ -82,12 +89,14 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
     // HandHoverManager가 직접 호출
     public void SetHover(bool isHover)
     {
-        if (!useAnimation || cardType == CardType.Deck || cardType == CardType.Special) return;
+        if (!useAnimation || cardType == CardType.Deck) return;
 
         if (isHover)
         {
             transform.DOKill(true);   
-            targetScale = originalScale * hoverScale;
+            targetScale = originalScale * (cardType == CardType.Special ? 1.12f : hoverScale);
+            if (cardType == CardType.Special && cardImage != null)
+                cardImage.color = Color.Lerp(originalColor, Color.white, 0.35f);
             if(cardType == CardType.Hand)
             {
               transform.SetLocalPositionAndRotation(transform.localPosition + Vector3.up * yOffset, Quaternion.identity);
@@ -98,6 +107,7 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
         else
         {
             targetScale = originalScale;
+            if (cardType == CardType.Special && cardImage != null) cardImage.color = originalColor;
             if(cardType == CardType.Hand)
             {
               transform.SetLocalPositionAndRotation(homeLocalPosition, homeLocalRotation);
@@ -115,8 +125,48 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
 
     public void FlipCard(bool faceUp)
     {
-        Image cardImage = GetComponent<Image>();
-        cardImage.sprite = faceUp ? cardFrontImage : cardBackImage;
+        if (cardImage != null && (faceUp ? cardFrontImage : cardBackImage) != null)
+            cardImage.sprite = faceUp ? cardFrontImage : cardBackImage;
+    }
+
+    public void SetSpecialFace(bool faceUp)
+    {
+        if (cardImage == null) cardImage = GetComponent<Image>();
+        if (cardImage != null) cardImage.color = faceUp ? new Color(0.96f, 0.82f, 0.42f) : new Color(0.22f, 0.18f, 0.32f);
+        originalColor = cardImage != null ? cardImage.color : Color.white;
+        EnsureSpecialText();
+        if (specialText != null) specialText.gameObject.SetActive(faceUp);
+    }
+
+    public Tween FlipSpecialFaceUp(float duration)
+    {
+        RectTransform rect = transform as RectTransform;
+        if (rect == null) return null;
+        Sequence sequence = DOTween.Sequence();
+        sequence.Append(rect.DOScaleX(0f, duration * 0.5f));
+        sequence.AppendCallback(() => SetSpecialFace(true));
+        sequence.Append(rect.DOScaleX(originalScale.x, duration * 0.5f));
+        return sequence;
+    }
+
+    private void EnsureSpecialText()
+    {
+        if (specialText != null) return;
+        GameObject label = new GameObject("Special Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+        label.transform.SetParent(transform, false);
+        RectTransform labelRect = label.GetComponent<RectTransform>();
+        labelRect.anchorMin = new Vector2(0.08f, 0.1f);
+        labelRect.anchorMax = new Vector2(0.92f, 0.9f);
+        labelRect.offsetMin = Vector2.zero;
+        labelRect.offsetMax = Vector2.zero;
+        specialText = label.GetComponent<TextMeshProUGUI>();
+        specialText.font = TMP_Settings.defaultFontAsset;
+        specialText.alignment = TextAlignmentOptions.Center;
+        specialText.enableWordWrapping = true;
+        specialText.fontSize = 24f;
+        specialText.color = new Color(0.18f, 0.1f, 0.05f);
+        specialText.raycastTarget = false;
+        specialText.text = $"<b>{cardName}</b>\n\n{cardDescription}";
     }
 
 }
