@@ -14,8 +14,10 @@ public class SpecialSelectPanel : MonoBehaviour
     [SerializeField] private float flipDuration = 0.35f;
 
     public bool isActive { get; private set; }
-    public Action<CardUI> OnSpecialSelected;
     private bool isSelecting;
+    private readonly Dictionary<CardUI, PerkType> perkCandidates = new Dictionary<CardUI, PerkType>();
+    private Func<PerkType, bool> trySelectPerk;
+    private Action<PerkType> onPerkSelectionCompleted;
 
     private void Awake()
     {
@@ -25,26 +27,108 @@ public class SpecialSelectPanel : MonoBehaviour
 
     public void Show(List<(string name, string desc)> options)
     {
-        foreach (Transform child in cardContainer) Destroy(child.gameObject);
+        if (options == null || !PrepareToShow())
+            return;
 
-        isSelecting = false;
         foreach (var option in options)
+            CreateCandidateCard(option.name, option.desc);
+
+        ActivatePanel();
+    }
+
+    public bool ShowPerkOptions(
+        IReadOnlyList<PerkType> perks,
+        Func<PerkType, bool> trySelect,
+        Action<PerkType> selectionCompleted)
+    {
+        if (perks == null || trySelect == null || !PrepareToShow())
+            return false;
+
+        trySelectPerk = trySelect;
+        onPerkSelectionCompleted = selectionCompleted;
+
+        foreach (PerkType perk in perks)
         {
-            GameObject card = Instantiate(cardPrefab, cardContainer);
-            RectTransform cardRect = card.GetComponent<RectTransform>();
-            if (cardRect != null) cardRect.sizeDelta = candidateCardSize;
-
-            CardUI cardUI = card.GetComponent<CardUI>();
-            cardUI.cardType = CardType.Special;
-            cardUI.cardName = option.name;
-            cardUI.cardDescription = option.desc;
-            cardUI.onClicked = OnCardSelected;
-            cardUI.SetSpecialFace(false);
-
-            CardDragManager dragManager = card.GetComponent<CardDragManager>();
-            if (dragManager != null) Destroy(dragManager);
+            CardUI card = CreateCandidateCard(
+                PerkCatalog.GetName(perk),
+                PerkCatalog.GetDescription(perk));
+            if (card != null)
+                perkCandidates[card] = perk;
         }
 
+        if (perkCandidates.Count == 0)
+            return false;
+
+        ActivatePanel();
+        return true;
+    }
+
+    public bool TryDisplayPerk(PerkType perk, SlotOwner owner)
+    {
+        CardSlot emptySlot = FindEmptySpecialSlot(owner);
+        return TryPlacePerkCard(
+            cardPrefab,
+            emptySlot,
+            PerkCatalog.GetName(perk),
+            PerkCatalog.GetDescription(perk));
+    }
+
+    private bool PrepareToShow()
+    {
+        if (cardContainer == null || cardPrefab == null || specialSlotContainer == null)
+        {
+            Debug.LogWarning("SpecialSelectPanel is missing a required reference.");
+            return false;
+        }
+
+        if (FindEmptySpecialSlot() == null)
+        {
+            Debug.LogWarning("SpecialSelectPanel has no available special slot.");
+            return false;
+        }
+
+        foreach (Transform child in cardContainer)
+        {
+            child.gameObject.SetActive(false);
+            Destroy(child.gameObject);
+        }
+
+        isSelecting = false;
+        perkCandidates.Clear();
+        trySelectPerk = null;
+        onPerkSelectionCompleted = null;
+        return true;
+    }
+
+    private CardUI CreateCandidateCard(string name, string description)
+    {
+        GameObject card = Instantiate(cardPrefab, cardContainer);
+        RectTransform cardRect = card.GetComponent<RectTransform>();
+        if (cardRect != null)
+            cardRect.sizeDelta = candidateCardSize;
+
+        CardUI cardUI = card.GetComponent<CardUI>();
+        if (cardUI == null)
+        {
+            Destroy(card);
+            return null;
+        }
+
+        cardUI.cardType = CardType.Special;
+        cardUI.cardName = name;
+        cardUI.cardDescription = description;
+        cardUI.onClicked = OnCardSelected;
+        cardUI.SetSpecialFace(false);
+
+        CardDragManager dragManager = card.GetComponent<CardDragManager>();
+        if (dragManager != null)
+            Destroy(dragManager);
+
+        return cardUI;
+    }
+
+    private void ActivatePanel()
+    {
         gameObject.SetActive(true);
         isActive = true;
         if (gameBoardCanvasGroup != null)
@@ -52,11 +136,13 @@ public class SpecialSelectPanel : MonoBehaviour
             gameBoardCanvasGroup.interactable = false;
             gameBoardCanvasGroup.blocksRaycasts = false;
         }
+
     }
 
     private void OnCardSelected(CardUI selected)
     {
         if (isSelecting) return;
+
         CardSlot emptySlot = FindEmptySpecialSlot();
         if (emptySlot == null)
         {
@@ -64,46 +150,101 @@ public class SpecialSelectPanel : MonoBehaviour
             return;
         }
 
+        PerkType selectedPerk;
+        if (perkCandidates.TryGetValue(selected, out selectedPerk)
+            && !trySelectPerk(selectedPerk))
+        {
+            Debug.LogWarning($"Could not add perk: {PerkCatalog.GetName(selectedPerk)}");
+            return;
+        }
+
         isSelecting = true;
-        StartCoroutine(SelectRoutine(selected, emptySlot));
+        StartCoroutine(SelectRoutine(selected, emptySlot, selectedPerk));
     }
 
-    private IEnumerator SelectRoutine(CardUI selected, CardSlot emptySlot)
+    private IEnumerator SelectRoutine(CardUI selected, CardSlot emptySlot, PerkType selectedPerk)
     {
         selected.onClicked = null;
         Tween flip = selected.FlipSpecialFaceUp(flipDuration);
         if (flip != null) yield return flip.WaitForCompletion();
 
-        GameObject placedCard = Instantiate(selected.gameObject, emptySlot.transform);
-        RectTransform rt = placedCard.GetComponent<RectTransform>();
-        // 슬롯을 가득 채워, 슬롯 크기가 바뀌어도 특전 카드가 항상 동일한 크기를 유지한다.
-        rt.anchorMin = Vector2.zero;
-        rt.anchorMax = Vector2.one;
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.offsetMin = Vector2.zero;
-        rt.offsetMax = Vector2.zero;
-        rt.localRotation = Quaternion.identity;
-        rt.localScale = Vector3.one;
+        TryPlacePerkCard(
+            selected.gameObject,
+            emptySlot,
+            selected.cardName,
+            selected.cardDescription);
 
+        bool selectedPerkCandidate = perkCandidates.ContainsKey(selected);
+
+        if (selectedPerkCandidate)
+            onPerkSelectionCompleted?.Invoke(selectedPerk);
+
+        isSelecting = false;
+        Hide();
+    }
+
+    private bool TryPlacePerkCard(
+        GameObject source,
+        CardSlot slot,
+        string name,
+        string description)
+    {
+        if (source == null || slot == null)
+            return false;
+
+        GameObject placedCard = Instantiate(source, slot.transform);
         CardUI placedUI = placedCard.GetComponent<CardUI>();
+        if (placedUI == null)
+        {
+            Destroy(placedCard);
+            return false;
+        }
+
         placedUI.cardType = CardType.Special;
+        placedUI.cardName = name;
+        placedUI.cardDescription = description;
         placedUI.onClicked = null;
         placedUI.SetSpecialFace(true);
-        CardDragManager dragManager = placedCard.GetComponent<CardDragManager>();
-        if (dragManager != null) Destroy(dragManager);
-        emptySlot.SetCard(placedCard);
 
-        Hide();
-        OnSpecialSelected?.Invoke(placedUI);
-        isSelecting = false;
+        RectTransform rect = placedCard.GetComponent<RectTransform>();
+        if (rect != null)
+        {
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            rect.localRotation = Quaternion.identity;
+            rect.localScale = Vector3.one;
+        }
+
+        CardDragManager dragManager = placedCard.GetComponent<CardDragManager>();
+        if (dragManager != null)
+            Destroy(dragManager);
+
+        slot.SetCard(placedCard);
+        return true;
     }
 
     private CardSlot FindEmptySpecialSlot()
     {
-        foreach (Transform child in specialSlotContainer)
+        return FindEmptySpecialSlot(SlotOwner.Player);
+    }
+
+    private CardSlot FindEmptySpecialSlot(SlotOwner owner)
+    {
+        CardSlot[] slots = owner == SlotOwner.Player && specialSlotContainer != null
+            ? specialSlotContainer.GetComponentsInChildren<CardSlot>()
+            : FindObjectsOfType<CardSlot>();
+
+        foreach (CardSlot slot in slots)
         {
-            CardSlot slot = child.GetComponent<CardSlot>();
-            if (slot != null && !slot.IsOccupied) return slot;
+            if (slot.category == SlotCategory.Special
+                && slot.owner == owner
+                && !slot.IsOccupied)
+            {
+                return slot;
+            }
         }
         return null;
     }

@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using DG.Tweening;
-using TMPro;
 
 public enum CardType
 {
@@ -41,7 +40,6 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
     private Vector3 targetScale;
     private Color originalColor;
     private Image cardImage;
-    private TMP_Text specialText;
 
     public Vector3 homeLocalPosition;
     public Quaternion homeLocalRotation;
@@ -134,8 +132,6 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
         if (cardImage == null) cardImage = GetComponent<Image>();
         if (cardImage != null) cardImage.color = faceUp ? new Color(0.96f, 0.82f, 0.42f) : new Color(0.22f, 0.18f, 0.32f);
         originalColor = cardImage != null ? cardImage.color : Color.white;
-        EnsureSpecialText();
-        if (specialText != null) specialText.gameObject.SetActive(faceUp);
     }
 
     public Tween FlipSpecialFaceUp(float duration)
@@ -147,26 +143,6 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
         sequence.AppendCallback(() => SetSpecialFace(true));
         sequence.Append(rect.DOScaleX(originalScale.x, duration * 0.5f));
         return sequence;
-    }
-
-    private void EnsureSpecialText()
-    {
-        if (specialText != null) return;
-        GameObject label = new GameObject("Special Text", typeof(RectTransform), typeof(TextMeshProUGUI));
-        label.transform.SetParent(transform, false);
-        RectTransform labelRect = label.GetComponent<RectTransform>();
-        labelRect.anchorMin = new Vector2(0.08f, 0.1f);
-        labelRect.anchorMax = new Vector2(0.92f, 0.9f);
-        labelRect.offsetMin = Vector2.zero;
-        labelRect.offsetMax = Vector2.zero;
-        specialText = label.GetComponent<TextMeshProUGUI>();
-        specialText.font = TMP_Settings.defaultFontAsset;
-        specialText.alignment = TextAlignmentOptions.Center;
-        specialText.enableWordWrapping = true;
-        specialText.fontSize = 24f;
-        specialText.color = new Color(0.18f, 0.1f, 0.05f);
-        specialText.raycastTarget = false;
-        specialText.text = $"<b>{cardName}</b>\n\n{cardDescription}";
     }
 
 }

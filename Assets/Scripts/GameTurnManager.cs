@@ -111,16 +111,7 @@ public class GameTurnManager : MonoBehaviour
         if (aiCardManager != null)
             aiCardManager.ResetPerks();
 
-        if (specialSelectPanel == null) { StartGame(); return; }
-        specialSelectPanel.OnSpecialSelected = _ => StartGame();
-        specialSelectPanel.Show(new System.Collections.Generic.List<(string name, string desc)>
-        {
-            ("Flame Boost", "Your next card deals double damage."),
-            ("Ice Shield", "Reduce incoming damage by 50%."),
-            ("Chain Attack", "Play two additional cards next turn."),
-            ("Lucky Draw", "Draw one extra card at the start of your turn."),
-            ("Second Wind", "Recover once when your score falls behind.")
-        });
+        StartGame();
     }
 
     public void StartGame()
@@ -161,27 +152,105 @@ public class GameTurnManager : MonoBehaviour
         if (aiController != null)
             aiController.ResetRoundState();
 
-        // AI는 매 라운드 시작 시 중복되지 않은 특전 자동 선택
-        if (aiCardManager != null && currentRound <= CardManager.MaxPerkCount)
-        {
-            if (aiCardManager.TryAddRandomPerk(out PerkType selectedPerk))
-            {
-                Debug.Log(
-                    $"[AI Perk] Round {currentRound}: "
-                    + $"{PerkCatalog.GetName(selectedPerk)} 획득");
-            }
-            else
-            {
-                Debug.LogWarning(
-                    $"[AI Perk] Round {currentRound}: "
-                    + "추가로 선택할 수 있는 특전이 없습니다.");
-            }
-        }
-
         UpdatePerkDebugUI();
 
         currentTurn = TurnOwner.Player;
+        ShowPlayerPerkSelectionOrStartTurn();
+    }
+
+    private void ShowPlayerPerkSelectionOrStartTurn()
+    {
+        if (playerCardManager == null
+            || playerCardManager.OwnedPerks.Count >= CardManager.MaxPerkCount
+            || specialSelectPanel == null)
+        {
+            SelectAIPerkThenStartPlayerTurn();
+            return;
+        }
+
+        System.Collections.Generic.List<PerkType> candidates =
+            new System.Collections.Generic.List<PerkType>();
+        foreach (PerkType perk in PerkCatalog.All)
+        {
+            if (!playerCardManager.HasPerk(perk))
+                candidates.Add(perk);
+        }
+
+        if (candidates.Count == 0)
+        {
+            SelectAIPerkThenStartPlayerTurn();
+            return;
+        }
+
+        bool shown = specialSelectPanel.ShowPerkOptions(
+            candidates,
+            TryAddPlayerPerk,
+            _ =>
+            {
+                SelectAIPerkThenStartPlayerTurn();
+            });
+
+        if (!shown)
+            SelectAIPerkThenStartPlayerTurn();
+    }
+
+    private bool TryAddPlayerPerk(PerkType perk)
+    {
+        if (playerCardManager == null || !playerCardManager.TryAddPerk(perk))
+            return false;
+
+        Debug.Log($"[Player Perk] Round {currentRound}: {PerkCatalog.GetName(perk)} acquired");
+        return true;
+    }
+
+    private void SelectAIPerkThenStartPlayerTurn()
+    {
+        TrySelectAIPerk();
+        UpdatePerkDebugUI();
         StartPlayerTurn();
+    }
+
+    private void TrySelectAIPerk()
+    {
+        if (aiCardManager == null
+            || aiCardManager.OwnedPerks.Count >= CardManager.MaxPerkCount)
+        {
+            return;
+        }
+
+        System.Collections.Generic.List<PerkType> differentCandidates =
+            new System.Collections.Generic.List<PerkType>();
+        System.Collections.Generic.List<PerkType> fallbackCandidates =
+            new System.Collections.Generic.List<PerkType>();
+
+        foreach (PerkType perk in PerkCatalog.All)
+        {
+            if (aiCardManager.HasPerk(perk))
+                continue;
+
+            fallbackCandidates.Add(perk);
+            if (playerCardManager == null || !playerCardManager.HasPerk(perk))
+                differentCandidates.Add(perk);
+        }
+
+        System.Collections.Generic.List<PerkType> candidates =
+            differentCandidates.Count > 0 ? differentCandidates : fallbackCandidates;
+        if (candidates.Count == 0)
+            return;
+
+        PerkType selectedPerk = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+        if (!aiCardManager.TryAddPerk(selectedPerk))
+            return;
+
+        if (specialSelectPanel != null
+            && !specialSelectPanel.TryDisplayPerk(selectedPerk, SlotOwner.Enemy))
+        {
+            Debug.LogWarning("Could not display the AI perk card in an AI special slot.");
+        }
+
+        Debug.Log(
+            $"[AI Perk] Round {currentRound}: "
+            + $"{PerkCatalog.GetName(selectedPerk)} acquired");
     }
 
     private void StartPlayerTurn()

@@ -10,6 +10,9 @@ public class PlayerPerkShortcutController : MonoBehaviour
     [Header("Optional Debug UI")]
     [SerializeField] private TMP_Text playerPerkText;
 
+    [Header("Debug")]
+    [SerializeField] private bool enableNumberKeySelection;
+
     private void Start()
     {
         RefreshPerkText();
@@ -17,6 +20,9 @@ public class PlayerPerkShortcutController : MonoBehaviour
 
     private void Update()
     {
+        if (!enableNumberKeySelection)
+            return;
+
         // 기존 게임 시작 전 특전 선택창이 열려 있을 때는 단축키를 받지 않는다.
         if (specialSelectPanel != null && specialSelectPanel.isActive)
             return;

@@ -27,8 +27,10 @@ public class GameInputManager : MonoBehaviour
     [SerializeField] private CardHoverManager cardHoverManager;
 
     [SerializeField] private TextMeshProUGUI playerScoreText;
+    [SerializeField] private TextMeshProUGUI scoreText;
 
     private bool isPlayerTurn = false;
+    private bool scoreTextWarningShown;
 
     private CardUI lastHovered;
     private int lastFieldCount = -1;
@@ -36,7 +38,7 @@ public class GameInputManager : MonoBehaviour
 
     void Start()
     {
-
+        ResolveScoreText();
     }
 
     void Update()
@@ -81,7 +83,8 @@ public class GameInputManager : MonoBehaviour
 
     private void UpdateScorePreview()
     {
-        if (playerScoreText == null) return;
+        TextMeshProUGUI valueText = ResolveScoreText();
+        if (valueText == null) return;
 
         CardUI hovered = cardHoverManager?.CurrentHovered;
         int fieldCount = cardManager.fieldList.Count;
@@ -120,7 +123,35 @@ public class GameInputManager : MonoBehaviour
 
         float score = cardManager.CalculateScore(result, emptySlots);
 
-        playerScoreText.text = $"Score: {Mathf.RoundToInt(score)}";
+        valueText.text = Mathf.RoundToInt(score).ToString();
+    }
+
+    private TextMeshProUGUI ResolveScoreText()
+    {
+        if (scoreText != null)
+            return scoreText;
+
+        if (playerScoreText != null && playerScoreText.transform.parent != null)
+        {
+            TextMeshProUGUI[] texts =
+                playerScoreText.transform.parent.GetComponentsInChildren<TextMeshProUGUI>(true);
+            foreach (TextMeshProUGUI text in texts)
+            {
+                if (text != null && text.gameObject.name == "ScoreText")
+                {
+                    scoreText = text;
+                    return scoreText;
+                }
+            }
+        }
+
+        if (!scoreTextWarningShown)
+        {
+            Debug.LogWarning("ScorePannel 아래의 ScoreText가 연결되지 않았습니다.");
+            scoreTextWarningShown = true;
+        }
+
+        return null;
     }
 
     private int GetEmptyPlayerSlots()
@@ -230,9 +261,10 @@ public class GameInputManager : MonoBehaviour
         float score = cardManager.CalculateScore(result, blankSlots);
 
         // TODO: score를 실제 UI(점수판)에 반영
-        if (playerScoreText != null)
+        TextMeshProUGUI valueText = ResolveScoreText();
+        if (valueText != null)
         {
-            playerScoreText.text = $"Score: {score}";
+            valueText.text = Mathf.RoundToInt(score).ToString();
         }
 
         // 게임 종료 처리
