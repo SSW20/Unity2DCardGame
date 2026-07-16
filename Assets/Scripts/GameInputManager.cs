@@ -4,6 +4,7 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 
 public class GameInputManager : MonoBehaviour
@@ -29,12 +30,19 @@ public class GameInputManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI playerScoreText;
     [SerializeField] private TextMeshProUGUI scoreText;
 
+    [Header("Graveyard Viewer")]
+    [SerializeField, Range(0f, 1f)] private float graveyardOverlayOpacity = 0.9f;
+    [SerializeField] private Vector2 graveyardViewerCardSize = new Vector2(140f, 200f);
+    [SerializeField] private Vector2 graveyardViewerSpacing = new Vector2(24f, 24f);
+    [SerializeField] private int graveyardViewerMaxColumns = 10;
+
     private bool isPlayerTurn = false;
     private bool scoreTextWarningShown;
 
     private CardUI lastHovered;
     private int lastFieldCount = -1;
     private int lastGraveCount = -1;
+    private GameObject graveyardOverlay;
 
     void Start()
     {
@@ -43,6 +51,20 @@ public class GameInputManager : MonoBehaviour
 
     void Update()
     {
+        if (graveyardOverlay != null)
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+                HideGraveyardViewer();
+
+            return;
+        }
+
+        if (Input.GetMouseButtonDown(0) && IsPointerOverPlayerGraveyard())
+        {
+            ShowGraveyardViewer();
+            return;
+        }
+
         UpdateScorePreview();
 
         if (Input.GetKeyDown(KeyCode.V))
@@ -124,6 +146,123 @@ public class GameInputManager : MonoBehaviour
         float score = cardManager.CalculateScore(result, emptySlots);
 
         valueText.text = Mathf.RoundToInt(score).ToString();
+    }
+
+    private bool IsPointerOverPlayerGraveyard()
+    {
+        if (graveyardPanel == null || cardManager == null || cardManager.graveList.Count == 0)
+            return false;
+
+        RectTransform graveyardRect = graveyardPanel as RectTransform;
+        if (graveyardRect == null)
+            return false;
+
+        Canvas canvas = graveyardPanel.GetComponentInParent<Canvas>();
+        Camera eventCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera
+            : null;
+
+        return RectTransformUtility.RectangleContainsScreenPoint(
+            graveyardRect,
+            Input.mousePosition,
+            eventCamera);
+    }
+
+    private void ShowGraveyardViewer()
+    {
+        if (graveyardOverlay != null || cardManager == null || cardManager.graveList.Count == 0)
+            return;
+
+        Canvas canvas = graveyardPanel != null
+            ? graveyardPanel.GetComponentInParent<Canvas>()
+            : null;
+        if (canvas == null)
+        {
+            Debug.LogWarning("Player graveyard Canvas could not be found.");
+            return;
+        }
+
+        graveyardOverlay = new GameObject(
+            "PlayerGraveyardOverlay",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image),
+            typeof(Button));
+        graveyardOverlay.transform.SetParent(canvas.transform, false);
+        graveyardOverlay.transform.SetAsLastSibling();
+
+        RectTransform overlayRect = graveyardOverlay.GetComponent<RectTransform>();
+        overlayRect.anchorMin = Vector2.zero;
+        overlayRect.anchorMax = Vector2.one;
+        overlayRect.offsetMin = Vector2.zero;
+        overlayRect.offsetMax = Vector2.zero;
+
+        Image background = graveyardOverlay.GetComponent<Image>();
+        background.color = new Color(0f, 0f, 0f, graveyardOverlayOpacity);
+
+        Button closeButton = graveyardOverlay.GetComponent<Button>();
+        closeButton.transition = Selectable.Transition.None;
+        closeButton.onClick.AddListener(HideGraveyardViewer);
+
+        GameObject contentObject = new GameObject(
+            "Cards",
+            typeof(RectTransform),
+            typeof(GridLayoutGroup));
+        contentObject.transform.SetParent(graveyardOverlay.transform, false);
+
+        RectTransform contentRect = contentObject.GetComponent<RectTransform>();
+        contentRect.anchorMin = new Vector2(0.05f, 0.08f);
+        contentRect.anchorMax = new Vector2(0.95f, 0.92f);
+        contentRect.offsetMin = Vector2.zero;
+        contentRect.offsetMax = Vector2.zero;
+
+        GridLayoutGroup grid = contentObject.GetComponent<GridLayoutGroup>();
+        grid.cellSize = graveyardViewerCardSize;
+        grid.spacing = graveyardViewerSpacing;
+        grid.childAlignment = TextAnchor.MiddleCenter;
+        grid.startAxis = GridLayoutGroup.Axis.Horizontal;
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = Mathf.Max(
+            1,
+            Mathf.Min(graveyardViewerMaxColumns, cardManager.graveList.Count));
+
+        foreach (PokerCardData graveCard in cardManager.graveList)
+        {
+            GameObject card = Instantiate(cardPrefab, contentObject.transform);
+            card.name = "GraveyardCard";
+
+            RectTransform cardRect = card.GetComponent<RectTransform>();
+            if (cardRect != null)
+            {
+                cardRect.localScale = Vector3.one;
+                cardRect.localRotation = Quaternion.identity;
+            }
+
+            CardUI cardUI = card.GetComponent<CardUI>();
+            if (cardUI != null)
+            {
+                cardUI.useAnimation = false;
+                cardUI.cardType = CardType.Deck;
+                cardUI.SetPokerData(graveCard);
+                cardUI.FlipCard(true);
+            }
+
+            CardDragManager dragManager = card.GetComponent<CardDragManager>();
+            if (dragManager != null)
+            {
+                dragManager.enabled = false;
+                Destroy(dragManager);
+            }
+        }
+    }
+
+    private void HideGraveyardViewer()
+    {
+        if (graveyardOverlay == null)
+            return;
+
+        Destroy(graveyardOverlay);
+        graveyardOverlay = null;
     }
 
     private TextMeshProUGUI ResolveScoreText()
