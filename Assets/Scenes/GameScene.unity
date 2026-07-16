@@ -2644,12 +2644,12 @@ MonoBehaviour:
   - {fileID: 21300000, guid: c61a7929ad407414e9a2ca56ae081996, type: 3}
   - {fileID: 21300000, guid: 2f8f57f9ffacf664fafc27eb64146a8a, type: 3}
   - {fileID: 21300000, guid: 0ecfcabbf9f1c6d45af128d68835e7bc, type: 3}
-  dealerSmileFrameDuration: 0.15
+  dealerSmileFrameDuration: 1
   dealerAnnoyedFrames:
   - {fileID: 21300000, guid: 903ad98858bbc744e932e2b77bf2b35a, type: 3}
   - {fileID: 21300000, guid: 90ade5cf2ddb647408f2f27d035767c4, type: 3}
   - {fileID: 21300000, guid: 35550e4a94c9b9c4e9ca030712e6a0a1, type: 3}
-  dealerAnnoyedFrameDuration: 0.15
+  dealerAnnoyedFrameDuration: 1
   scoreClashUI: {fileID: 1369545611}
   debugUseRandomClashScore: 0
   debugRandomScoreRange: {x: 0, y: 0}
@@ -7001,6 +7001,10 @@ MonoBehaviour:
   cardHoverManager: {fileID: 380052300}
   playerScoreText: {fileID: 1074483687}
   scoreText: {fileID: 0}
+  graveyardOverlayOpacity: 0.9
+  graveyardViewerCardSize: {x: 140, y: 200}
+  graveyardViewerSpacing: {x: 24, y: 24}
+  graveyardViewerMaxColumns: 10
 --- !u!4 &1896592140
 Transform:
   m_ObjectHideFlags: 0
