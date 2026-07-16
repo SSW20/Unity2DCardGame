@@ -64,6 +64,10 @@ public class GameTurnManager : MonoBehaviour
     [SerializeField] private Sprite dealerDefaultSprite;
     [SerializeField] private Sprite dealerSmileSprite;
     [SerializeField] private Sprite dealerAnnoyedSprite;
+    [SerializeField] private Sprite[] dealerSmileFrames;
+    [SerializeField] private float dealerSmileFrameDuration = 0.15f;
+    [SerializeField] private Sprite[] dealerAnnoyedFrames;
+    [SerializeField] private float dealerAnnoyedFrameDuration = 0.15f;
 
     [Header("Settlement Score Clash")]
     [SerializeField] private SettlementScoreClashUI scoreClashUI;
@@ -83,6 +87,7 @@ public class GameTurnManager : MonoBehaviour
     private int aiTotalScore = 0;
     private int currentRound = 0;
     private Text readableTurnBannerText;
+    private Coroutine dealerExpressionCoroutine;
 
     public int CurrentRound => currentRound;
 
@@ -496,13 +501,60 @@ public class GameTurnManager : MonoBehaviour
 
     private void SetDealerExpression(Sprite expression)
     {
+        StopDealerExpressionAnimation();
+
         if (dealerImage == null || expression == null)
         {
             Debug.LogWarning("Dealer expression is not assigned in GameTurnManager.");
             return;
         }
 
+        if (expression == dealerAnnoyedSprite
+            && dealerAnnoyedFrames != null
+            && dealerAnnoyedFrames.Length > 0)
+        {
+            dealerExpressionCoroutine = StartCoroutine(PlayDealerExpressionAnimation(
+                dealerAnnoyedFrames,
+                dealerAnnoyedFrameDuration));
+            return;
+        }
+
+        if (expression == dealerSmileSprite
+            && dealerSmileFrames != null
+            && dealerSmileFrames.Length > 0)
+        {
+            dealerExpressionCoroutine = StartCoroutine(PlayDealerExpressionAnimation(
+                dealerSmileFrames,
+                dealerSmileFrameDuration));
+            return;
+        }
+
         dealerImage.sprite = expression;
+    }
+
+    private IEnumerator PlayDealerExpressionAnimation(Sprite[] frames, float secondsPerFrame)
+    {
+        int frameIndex = 0;
+        float frameDuration = Mathf.Max(0.01f, secondsPerFrame);
+
+        while (true)
+        {
+            Sprite frame = frames[frameIndex];
+            if (frame != null)
+                dealerImage.sprite = frame;
+
+            frameIndex = (frameIndex + 1) % frames.Length;
+            yield return new WaitForSeconds(frameDuration);
+        }
+    }
+
+    private void StopDealerExpressionAnimation()
+    {
+        if (dealerExpressionCoroutine == null)
+            return;
+
+        StopCoroutine(dealerExpressionCoroutine);
+        dealerExpressionCoroutine = null;
     }
 
     private void ResetDealerExpression()
