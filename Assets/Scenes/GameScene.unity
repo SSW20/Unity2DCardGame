@@ -215,7 +215,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 81ddd0fbd8eab8b4a98ee444fbf4c615, type: 3}
+  m_Sprite: {fileID: 21300000, guid: ad2f495c84f95884faccc3161f9cb27d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1319,6 +1319,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   specialSelectPanel: {fileID: 1957350225}
   descriptionPanel: {fileID: 240927935}
+  aiController: {fileID: 0}
 --- !u!4 &380052301
 Transform:
   m_ObjectHideFlags: 0
@@ -2338,6 +2339,10 @@ PrefabInstance:
       propertyPath: m_Color.r
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4342957821621138886, guid: 31bda3bc3ac8fbe43ac9515d013fd351, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: -60
+      objectReference: {fileID: 0}
     - target: {fileID: 4853247111915698784, guid: 31bda3bc3ac8fbe43ac9515d013fd351, type: 3}
       propertyPath: m_text
       value: STOP
@@ -2379,12 +2384,12 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5716018332400579880, guid: 31bda3bc3ac8fbe43ac9515d013fd351, type: 3}
-      propertyPath: m_SpriteState.m_PressedSprite
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 5716018332400579880, guid: 31bda3bc3ac8fbe43ac9515d013fd351, type: 3}
       propertyPath: m_Transition
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5716018332400579880, guid: 31bda3bc3ac8fbe43ac9515d013fd351, type: 3}
+      propertyPath: m_SpriteState.m_PressedSprite
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 5716018332400579880, guid: 31bda3bc3ac8fbe43ac9515d013fd351, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
@@ -2450,14 +2455,6 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 100
       objectReference: {fileID: 0}
-    - target: {fileID: 4342957821621138886, guid: 31bda3bc3ac8fbe43ac9515d013fd351, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: -60
-      objectReference: {fileID: 0}
-    - target: {fileID: 6872479074526558703, guid: 31bda3bc3ac8fbe43ac9515d013fd351, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 6136725920808003419, guid: 31bda3bc3ac8fbe43ac9515d013fd351, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2504,6 +2501,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6136725920808003419, guid: 31bda3bc3ac8fbe43ac9515d013fd351, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6872479074526558703, guid: 31bda3bc3ac8fbe43ac9515d013fd351, type: 3}
+      propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6872479074526558703, guid: 31bda3bc3ac8fbe43ac9515d013fd351, type: 3}
@@ -6659,6 +6660,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canvasGroup: {fileID: 1792747256}
   fadeSpeed: 0.2
+  flipDuration: 0.2
+  moveDuration: 0.45
 --- !u!1 &1794740810
 GameObject:
   m_ObjectHideFlags: 0
@@ -7006,8 +7009,6 @@ MonoBehaviour:
   deckPanel: {fileID: 1035498038}
   graveyardPanel: {fileID: 69537765}
   handLayoutManager: {fileID: 2051791738}
-  gameOverPannel: {fileID: 1792747257}
-  specialSelectPanel: {fileID: 1957350225}
   cardManager: {fileID: 207791754}
   fieldSlotContainer: {fileID: 364784109}
   aiController: {fileID: 2032059631}
