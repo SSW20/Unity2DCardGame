@@ -268,6 +268,18 @@ public class AIController : MonoBehaviour
             aiHandLayoutManager.UpdateLayout();
     }
 
+    public bool IsOwnedCard(CardUI card)
+    {
+        if (card == null)
+            return false;
+
+        Transform cardTransform = card.transform;
+
+        return (aiHandPanel != null && cardTransform.IsChildOf(aiHandPanel))
+            || (aiFieldSlotContainer != null && cardTransform.IsChildOf(aiFieldSlotContainer))
+            || (aiGraveyardPanel != null && cardTransform.IsChildOf(aiGraveyardPanel));
+    }
+
     private bool DecideStopOrTurnEnd(int remainingEmptySlots)
     {
         float chance = baseSettleChance;

@@ -13,6 +13,7 @@ public class CardHoverManager : MonoBehaviour
 
     [SerializeField] private SpecialSelectPanel specialSelectPanel;
     [SerializeField] private CardDescPanel descriptionPanel;
+    [SerializeField] private AIController aiController;
     private bool isSuspended;
 
 
@@ -20,6 +21,9 @@ public class CardHoverManager : MonoBehaviour
     {
         // Hand 타입 카드만 따로 저장 (거리 기반 처리용)
         var all = FindObjectsOfType<CardUI>();
+
+        if (aiController == null)
+            aiController = FindObjectOfType<AIController>();
     }
 
     void Update()
@@ -42,6 +46,7 @@ public class CardHoverManager : MonoBehaviour
             CardUI card = result.gameObject.GetComponent<CardUI>();
             if (card == null) continue;
             if (card.isDragging) continue;
+            if (aiController != null && aiController.IsOwnedCard(card)) continue;
             if (card.cardType == CardType.Field || card.cardType == CardType.Deck) continue;
 
             if (card.cardType == CardType.Special)
