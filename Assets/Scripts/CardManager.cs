@@ -279,57 +279,23 @@ public class CardManager : MonoBehaviour
         float tripleAndStraightScore = 0f;
 
         // 보유 특전에 따라 점수식의 계수를 결정한다.
-        float tripleCostCoefficient =
-            HasPerk(PerkType.TripleCostBoost) ? 0.5f : 0.1f;
-
-        float tripleEmptySlotBonus =
-            HasPerk(PerkType.EmptySlotBoost) ? 0.8f : 0.6f;
-
-        float straightEmptySlotBonus =
-            HasPerk(PerkType.EmptySlotBoost) ? 0.8f : 0.7f;
-
         // ===== 트리플 / 포카드 점수 =====
-        int trp = 1 + result.triples.Count + result.fourOfAKinds.Count * 2;
-        float trpMultiplier = trp * trp;
+        foreach (var triple in result.triples)
+            tripleAndStraightScore += (GetRankCost(triple) + 10f) * 3f;
 
-        float costTrp = 0f;
-
-        foreach (var group in result.triples)
-        {
-            foreach (var card in group)
-                costTrp += (int)card.rank;
-        }
-
-        foreach (var group in result.fourOfAKinds)
-        {
-            foreach (var card in group)
-                costTrp += (int)card.rank;
-        }
-
-        if (result.triples.Count > 0 || result.fourOfAKinds.Count > 0)
-        {
-            float trpScore =
-                (costTrp * tripleCostCoefficient + 15f)
-                * trpMultiplier
-                * ((emptySlotCount + 1) * tripleEmptySlotBonus);
-
-            tripleAndStraightScore += trpScore;
-        }
+        foreach (var fourOfAKind in result.fourOfAKinds)
+            tripleAndStraightScore += (GetRankCost(fourOfAKind) + 10f) * 8f;
 
         // ===== 스트레이트 점수 =====
         foreach (var straight in result.straights)
         {
             int cardCount = straight.Count;
-            float str = cardCount;
-
             float costStr = 0f;
 
             foreach (var card in straight)
                 costStr += (int)card.rank;
 
-            float strScore =
-                (costStr * 0.6f * str)
-                * ((emptySlotCount + 1) * straightEmptySlotBonus);
+            float strScore = costStr * GetStraightMultiplier(cardCount);
 
             // 스트레이트 강화:
             // 카드가 N장이면 1.2^N 배율을 적용한다.
@@ -355,5 +321,25 @@ public class CardManager : MonoBehaviour
             total += result.newGraveCardCount * 20f;
 
         return total;
+    }
+
+    private static float GetRankCost(List<PokerCardData> cards)
+    {
+        float cost = 0f;
+        foreach (PokerCardData card in cards)
+            cost += (int)card.rank;
+
+        return cost;
+    }
+
+    private static float GetStraightMultiplier(int cardCount)
+    {
+        switch (cardCount)
+        {
+            case 4: return 3f;
+            case 5: return 4f;
+            case 6: return 5f;
+            default: return cardCount >= 7 ? 8f : 0f;
+        }
     }
 }

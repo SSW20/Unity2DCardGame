@@ -335,6 +335,64 @@ public class GameInputManager : MonoBehaviour
             scoreInfoBodyFontSize,
             TextAlignmentOptions.TopLeft,
             font);
+        CreateScoreInfoText(
+            scoreInfoOverlay.transform,
+            "CloseHint",
+            "검은 여백을 누르거나 ESC를 누르면 닫힙니다.",
+            new Vector2(0.52f, 0.015f),
+            new Vector2(0.98f, 0.065f),
+            scoreInfoBodyFontSize * 0.8f,
+            TextAlignmentOptions.BottomRight,
+            font);
+        CreateJokerInformation(scoreInfoOverlay.transform, font);
+    }
+
+    private void CreateJokerInformation(Transform parent, TMP_FontAsset font)
+    {
+        if (cardPrefab == null)
+            return;
+
+        GameObject jokerCard = Instantiate(cardPrefab, parent);
+        jokerCard.name = "JokerCardPreview";
+
+        RectTransform cardRect = jokerCard.GetComponent<RectTransform>();
+        if (cardRect != null)
+        {
+            cardRect.anchorMin = new Vector2(0.72f, 0.75f);
+            cardRect.anchorMax = new Vector2(0.72f, 0.75f);
+            cardRect.pivot = new Vector2(0.5f, 0.5f);
+            cardRect.anchoredPosition = Vector2.zero;
+            cardRect.sizeDelta = graveyardViewerCardSize * 0.8f;
+            cardRect.localScale = Vector3.one;
+            cardRect.localRotation = Quaternion.identity;
+        }
+
+        CardUI cardUI = jokerCard.GetComponent<CardUI>();
+        if (cardUI != null)
+        {
+            cardUI.useAnimation = false;
+            cardUI.cardType = CardType.Deck;
+            cardUI.FlipCard(false);
+        }
+
+        CardDragManager dragManager = jokerCard.GetComponent<CardDragManager>();
+        if (dragManager != null)
+        {
+            dragManager.enabled = false;
+            Destroy(dragManager);
+        }
+
+        CreateScoreInfoText(
+            parent,
+            "JokerDescription",
+            "<size=115%><b>조커 카드</b></size>\n" +
+            "코스트: 10\n" +
+            "이번 턴에 이 카드를 내지 않으면\n강제로 결산됩니다.",
+            new Vector2(0.77f, 0.67f),
+            new Vector2(0.97f, 0.84f),
+            scoreInfoBodyFontSize * 0.85f,
+            TextAlignmentOptions.MidlineLeft,
+            font);
     }
 
     private void CreateScoreInfoText(
@@ -400,23 +458,30 @@ public class GameInputManager : MonoBehaviour
     {
         return
             "<b>카드 숫자</b>  A=1 / J=11 / Q=12 / K=13\n\n" +
-            "<b>조합 조건</b>\n" +
+            "<size=115%><b>조합 조건</b></size>\n" +
             "트리플: 같은 숫자 3장    포카드: 같은 숫자 4장\n" +
             "스트레이트: 서로 이어지는 숫자 4장 이상\n\n" +
-            "<b>트리플·포카드 점수</b>\n" +
-            "(조합 카드 숫자 합 × 0.1 + 15) × 조합 배율² × ((빈 슬롯 + 1) × 0.6)\n" +
-            "조합 배율 = 1 + 트리플 수 + (포카드 수 × 2)\n\n" +
-            "<b>스트레이트 점수</b>\n" +
-            "(스트레이트 숫자 합 × 0.6 × 카드 수) × ((빈 슬롯 + 1) × 0.7)\n" +
+            "<size=115%><b>트리플·포카드 점수</b></size>\n" +
+            "트리플: (조합 카드 숫자 합 + 10) × 3\n" +
+            "포카드: (조합 카드 숫자 합 + 10) × 8\n\n" +
+            "<size=115%><b>스트레이트 점수</b></size>\n" +
+            "조합 카드 숫자 합 × 족보 상수\n" +
+            "4연속 ×3 / 5연속 ×4 / 6연속 ×5 / 7연속 이상 ×8\n" +
             "여러 스트레이트가 있으면 각각 계산해서 더합니다.\n\n" +
-            "<b>특전 적용</b>\n" +
-            "트리플 코스트 강화: 숫자 합 계수 0.1 → 0.5\n" +
-            "빈 슬롯 강화: 트리플·포카드와 스트레이트의 빈 슬롯 계수 → 0.8\n" +
-            "스트레이트 강화: 스트레이트마다 × 1.2^(카드 수)\n" +
-            "고득점 보너스: 조합 점수 합이 100 이상이면 × 1.1\n" +
-            "무덤 카드 보너스: 이번 결산에서 새로 무덤에 간 카드마다 +20\n\n" +
-            "<b>결산</b>  조합에 사용된 카드는 덱으로, 사용되지 않은 필드 카드는 무덤으로 이동합니다.\n" +
-            "검은 여백을 누르거나 ESC를 누르면 닫힙니다.";
+            "<size=115%><b>특전 상세</b></size>\n" +
+            "1. <b>실전압축 슬롯</b>\n" +
+            "   상세: 점수 + 빈 슬롯 수 × 50점. 빈 슬롯 수만큼 추가 점수를 얻습니다.\n" +
+            "2. <b>파묘</b>\n" +
+            "   상세: 점수 + 무덤 카드 수 × 20점. 무덤의 카드가 많을수록 추가 점수를 얻습니다.\n" +
+            "3. <b>같은 숫자 수집가</b>\n" +
+            "   상세: 포카드 코스트에 +20을 적용하고 포카드 족보 상수는 ×8, 트리플은 ×4로 변경합니다.\n" +
+            "4. <b>공세</b>\n" +
+            "   상세: 상대보다 먼저 STOP 상태에 진입하면 +100점을 얻습니다.\n" +
+            "5. <b>연속의 달인</b>\n" +
+            "   상세: 스트레이트 코스트 평균이 6 이하이면 4/5/6연속 상수를 ×4/×5/×6으로 변경합니다.\n" +
+            "   평균이 7 이상이면 코스트 보정값 +20을 적용하며, 7연속 상수는 변경하지 않습니다.\n\n" +
+            "<b>결산:</b> 조합에 사용된 카드는 덱으로, 사용되지 않은 필드 카드는 무덤으로 이동합니다.\n" +
+            "<b>턴 종료:</b> 남은 손패를 덱으로 되돌리고 다음 턴으로 넘깁니다. 상대가 이미 결산했다면 플레이어 턴을 다시 시작합니다.";
     }
 
     private void HideScoreInformation()
