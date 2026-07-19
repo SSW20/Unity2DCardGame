@@ -36,6 +36,13 @@ public class GameInputManager : MonoBehaviour
     [SerializeField] private Vector2 graveyardViewerSpacing = new Vector2(24f, 24f);
     [SerializeField] private int graveyardViewerMaxColumns = 10;
 
+    [Header("Score Information")]
+    [SerializeField] private Button scoreInfoButton;
+    [SerializeField] private TMP_FontAsset scoreInfoFont;
+    [SerializeField, Range(0f, 1f)] private float scoreInfoOverlayOpacity = 0.94f;
+    [SerializeField] private float scoreInfoTitleFontSize = 44f;
+    [SerializeField] private float scoreInfoBodyFontSize = 26f;
+
     private bool isPlayerTurn = false;
     private bool scoreTextWarningShown;
 
@@ -43,18 +50,23 @@ public class GameInputManager : MonoBehaviour
     private int lastFieldCount = -1;
     private int lastGraveCount = -1;
     private GameObject graveyardOverlay;
+    private GameObject scoreInfoOverlay;
 
     void Start()
     {
         ResolveScoreText();
+        if (scoreInfoButton != null)
+            scoreInfoButton.onClick.AddListener(ShowScoreInformation);
+        else
+            Debug.LogWarning("ScoreInfoButton is not assigned in GameInputManager.");
     }
 
     void Update()
     {
-        if (graveyardOverlay != null)
+        if (graveyardOverlay != null || scoreInfoOverlay != null)
         {
             if (Input.GetKeyDown(KeyCode.Escape))
-                HideGraveyardViewer();
+                HideActiveOverlay();
 
             return;
         }
@@ -190,6 +202,7 @@ public class GameInputManager : MonoBehaviour
             typeof(Button));
         graveyardOverlay.transform.SetParent(canvas.transform, false);
         graveyardOverlay.transform.SetAsLastSibling();
+        cardHoverManager?.SetSuspended(true);
 
         RectTransform overlayRect = graveyardOverlay.GetComponent<RectTransform>();
         overlayRect.anchorMin = Vector2.zero;
@@ -263,6 +276,171 @@ public class GameInputManager : MonoBehaviour
 
         Destroy(graveyardOverlay);
         graveyardOverlay = null;
+        ResumeCardHoverIfNoOverlay();
+    }
+
+    private void ShowScoreInformation()
+    {
+        if (scoreInfoOverlay != null)
+            return;
+
+        Canvas canvas = scoreInfoButton != null
+            ? scoreInfoButton.GetComponentInParent<Canvas>()
+            : null;
+        if (canvas == null)
+        {
+            Debug.LogWarning("Score information Canvas could not be found.");
+            return;
+        }
+
+        scoreInfoOverlay = new GameObject(
+            "ScoreInformationOverlay",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image),
+            typeof(Button));
+        scoreInfoOverlay.transform.SetParent(canvas.transform, false);
+        scoreInfoOverlay.transform.SetAsLastSibling();
+        cardHoverManager?.SetSuspended(true);
+
+        RectTransform overlayRect = scoreInfoOverlay.GetComponent<RectTransform>();
+        overlayRect.anchorMin = Vector2.zero;
+        overlayRect.anchorMax = Vector2.one;
+        overlayRect.offsetMin = Vector2.zero;
+        overlayRect.offsetMax = Vector2.zero;
+
+        Image background = scoreInfoOverlay.GetComponent<Image>();
+        background.color = new Color(0f, 0f, 0f, scoreInfoOverlayOpacity);
+
+        Button closeButton = scoreInfoOverlay.GetComponent<Button>();
+        closeButton.transition = Selectable.Transition.None;
+        closeButton.onClick.AddListener(HideScoreInformation);
+
+        TMP_FontAsset font = ResolveScoreInfoFont();
+        CreateScoreInfoText(
+            scoreInfoOverlay.transform,
+            "Title",
+            "점수 계산 정보",
+            new Vector2(0.08f, 0.85f),
+            new Vector2(0.92f, 0.95f),
+            scoreInfoTitleFontSize,
+            TextAlignmentOptions.Center,
+            font);
+        CreateScoreInfoText(
+            scoreInfoOverlay.transform,
+            "Body",
+            GetScoreInformationText(),
+            new Vector2(0.1f, 0.08f),
+            new Vector2(0.9f, 0.84f),
+            scoreInfoBodyFontSize,
+            TextAlignmentOptions.TopLeft,
+            font);
+    }
+
+    private void CreateScoreInfoText(
+        Transform parent,
+        string objectName,
+        string content,
+        Vector2 anchorMin,
+        Vector2 anchorMax,
+        float fontSize,
+        TextAlignmentOptions alignment,
+        TMP_FontAsset font)
+    {
+        GameObject textObject = new GameObject(
+            objectName,
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(TextMeshProUGUI));
+        textObject.transform.SetParent(parent, false);
+
+        RectTransform rect = textObject.GetComponent<RectTransform>();
+        rect.anchorMin = anchorMin;
+        rect.anchorMax = anchorMax;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        TextMeshProUGUI text = textObject.GetComponent<TextMeshProUGUI>();
+        if (font != null)
+            text.font = font;
+        text.text = content;
+        text.fontSize = fontSize;
+        text.color = Color.white;
+        text.alignment = alignment;
+        text.enableWordWrapping = true;
+        text.overflowMode = TextOverflowModes.Overflow;
+        text.raycastTarget = false;
+    }
+
+    private TMP_FontAsset ResolveScoreInfoFont()
+    {
+        if (scoreInfoFont != null)
+            return scoreInfoFont;
+
+        TextMeshProUGUI[] sceneTexts = FindObjectsOfType<TextMeshProUGUI>(true);
+        foreach (TextMeshProUGUI text in sceneTexts)
+        {
+            if (text != null
+                && text.font != null
+                && text.font.name.ToLowerInvariant().Contains("neodgm"))
+            {
+                scoreInfoFont = text.font;
+                return scoreInfoFont;
+            }
+        }
+
+        TextMeshProUGUI templateText = scoreInfoButton != null
+            ? scoreInfoButton.GetComponentInChildren<TextMeshProUGUI>(true)
+            : null;
+        scoreInfoFont = templateText != null ? templateText.font : null;
+        return scoreInfoFont;
+    }
+
+    private string GetScoreInformationText()
+    {
+        return
+            "<b>카드 숫자</b>  A=1 / J=11 / Q=12 / K=13\n\n" +
+            "<b>조합 조건</b>\n" +
+            "트리플: 같은 숫자 3장    포카드: 같은 숫자 4장\n" +
+            "스트레이트: 서로 이어지는 숫자 4장 이상\n\n" +
+            "<b>트리플·포카드 점수</b>\n" +
+            "(조합 카드 숫자 합 × 0.1 + 15) × 조합 배율² × ((빈 슬롯 + 1) × 0.6)\n" +
+            "조합 배율 = 1 + 트리플 수 + (포카드 수 × 2)\n\n" +
+            "<b>스트레이트 점수</b>\n" +
+            "(스트레이트 숫자 합 × 0.6 × 카드 수) × ((빈 슬롯 + 1) × 0.7)\n" +
+            "여러 스트레이트가 있으면 각각 계산해서 더합니다.\n\n" +
+            "<b>특전 적용</b>\n" +
+            "트리플 코스트 강화: 숫자 합 계수 0.1 → 0.5\n" +
+            "빈 슬롯 강화: 트리플·포카드와 스트레이트의 빈 슬롯 계수 → 0.8\n" +
+            "스트레이트 강화: 스트레이트마다 × 1.2^(카드 수)\n" +
+            "고득점 보너스: 조합 점수 합이 100 이상이면 × 1.1\n" +
+            "무덤 카드 보너스: 이번 결산에서 새로 무덤에 간 카드마다 +20\n\n" +
+            "<b>결산</b>  조합에 사용된 카드는 덱으로, 사용되지 않은 필드 카드는 무덤으로 이동합니다.\n" +
+            "검은 여백을 누르거나 ESC를 누르면 닫힙니다.";
+    }
+
+    private void HideScoreInformation()
+    {
+        if (scoreInfoOverlay == null)
+            return;
+
+        Destroy(scoreInfoOverlay);
+        scoreInfoOverlay = null;
+        ResumeCardHoverIfNoOverlay();
+    }
+
+    private void ResumeCardHoverIfNoOverlay()
+    {
+        if (graveyardOverlay == null && scoreInfoOverlay == null)
+            cardHoverManager?.SetSuspended(false);
+    }
+
+    private void HideActiveOverlay()
+    {
+        if (graveyardOverlay != null)
+            HideGraveyardViewer();
+        if (scoreInfoOverlay != null)
+            HideScoreInformation();
     }
 
     private TextMeshProUGUI ResolveScoreText()

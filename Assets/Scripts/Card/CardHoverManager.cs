@@ -13,6 +13,7 @@ public class CardHoverManager : MonoBehaviour
 
     [SerializeField] private SpecialSelectPanel specialSelectPanel;
     [SerializeField] private CardDescPanel descriptionPanel;
+    private bool isSuspended;
 
 
     void Start()
@@ -23,6 +24,9 @@ public class CardHoverManager : MonoBehaviour
 
     void Update()
     {
+        if (isSuspended)
+            return;
+
         PointerEventData pointerData = new PointerEventData(EventSystem.current)
         {
             position = Input.mousePosition
@@ -80,6 +84,24 @@ public class CardHoverManager : MonoBehaviour
         else if (descriptionPanel != null)
             descriptionPanel.Hide();
 
+    }
+
+    public void SetSuspended(bool suspended)
+    {
+        if (isSuspended == suspended)
+            return;
+
+        isSuspended = suspended;
+        hitHandCards.Clear();
+
+        if (currentHovered != null)
+        {
+            currentHovered.SetHover(false);
+            currentHovered = null;
+        }
+
+        if (descriptionPanel != null)
+            descriptionPanel.Hide();
     }
 
     private CardUI GetNearestHandCard()
