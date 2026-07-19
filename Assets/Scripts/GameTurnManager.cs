@@ -82,6 +82,7 @@ public class GameTurnManager : MonoBehaviour
 
     private bool playerStopped = false;
     private bool aiStopped = false;
+    private bool playerActionButtonsBlocked;
 
     private int playerTotalScore = 0;
     private int aiTotalScore = 0;
@@ -360,7 +361,7 @@ public class GameTurnManager : MonoBehaviour
 
     public void OnPlayerTurnEndButton()
     {
-        if (currentPhase != GamePhase.PlayerTurn) return;
+        if (currentPhase != GamePhase.PlayerTurn || playerActionButtonsBlocked) return;
 
         gameInputManager.CleanupPlayerHandAfterTurn();
 
@@ -370,7 +371,7 @@ public class GameTurnManager : MonoBehaviour
 
     public void OnPlayerStopButton()
     {
-        if (currentPhase != GamePhase.PlayerTurn) return;
+        if (currentPhase != GamePhase.PlayerTurn || playerActionButtonsBlocked) return;
 
         playerStopped = true;
 
@@ -665,6 +666,25 @@ public class GameTurnManager : MonoBehaviour
     {
         if (phaseText != null)
             phaseText.text = currentPhase.ToString();
+
+        UpdatePlayerActionButtons();
+    }
+
+    public void SetPlayerActionButtonsBlocked(bool blocked)
+    {
+        playerActionButtonsBlocked = blocked;
+        UpdatePlayerActionButtons();
+    }
+
+    private void UpdatePlayerActionButtons()
+    {
+        bool interactable =
+            currentPhase == GamePhase.PlayerTurn && !playerActionButtonsBlocked;
+
+        if (stopButton != null)
+            stopButton.interactable = interactable;
+        if (turnEndButton != null)
+            turnEndButton.interactable = interactable;
     }
 
     // 질문 : 각 페이즈마다 해야되는 일들 
@@ -676,7 +696,7 @@ public class GameTurnManager : MonoBehaviour
     //다른 건 다 동의해요. 근데 ai 턴일 때는 어짜피 플레이어의 손에는 아무런 카드가 없으니 플레이어의 카드 움직임을 막는 건 추가할 필요 없지 않을까요?
     private void Update()
     {
-        if (currentPhase != GamePhase.PlayerTurn) return;
+        if (currentPhase != GamePhase.PlayerTurn || playerActionButtonsBlocked) return;
 
         if (Input.GetKeyDown(KeyCode.E))
         {

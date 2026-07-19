@@ -203,6 +203,7 @@ public class GameInputManager : MonoBehaviour
         graveyardOverlay.transform.SetParent(canvas.transform, false);
         graveyardOverlay.transform.SetAsLastSibling();
         cardHoverManager?.SetSuspended(true);
+        gameTurnManager?.SetPlayerActionButtonsBlocked(true);
 
         RectTransform overlayRect = graveyardOverlay.GetComponent<RectTransform>();
         overlayRect.anchorMin = Vector2.zero;
@@ -302,6 +303,7 @@ public class GameInputManager : MonoBehaviour
         scoreInfoOverlay.transform.SetParent(canvas.transform, false);
         scoreInfoOverlay.transform.SetAsLastSibling();
         cardHoverManager?.SetSuspended(true);
+        gameTurnManager?.SetPlayerActionButtonsBlocked(true);
 
         RectTransform overlayRect = scoreInfoOverlay.GetComponent<RectTransform>();
         overlayRect.anchorMin = Vector2.zero;
@@ -497,7 +499,10 @@ public class GameInputManager : MonoBehaviour
     private void ResumeCardHoverIfNoOverlay()
     {
         if (graveyardOverlay == null && scoreInfoOverlay == null)
+        {
             cardHoverManager?.SetSuspended(false);
+            gameTurnManager?.SetPlayerActionButtonsBlocked(false);
+        }
     }
 
     private void HideActiveOverlay()
