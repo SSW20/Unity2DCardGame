@@ -99,6 +99,7 @@ public class GameTurnManager : MonoBehaviour
 
     private void Start()
     {
+        FindGameOverPanelIfNeeded();
         SetupButtons();
 
         if (turnBannerObject != null)
@@ -572,8 +573,7 @@ public class GameTurnManager : MonoBehaviour
 
             Debug.Log("Player wins");
 
-            if (gameOverPannel != null)
-                gameOverPannel.Show();
+            ShowFinalResult(true);
 
             return;
         }
@@ -585,13 +585,64 @@ public class GameTurnManager : MonoBehaviour
 
             Debug.Log("AI win");
 
-            if (gameOverPannel != null)
-                gameOverPannel.Show();
+            ShowFinalResult(false);
 
             return;
         }
 
         StartNewRound();
+    }
+
+    private void FindGameOverPanelIfNeeded()
+    {
+        if (gameOverPannel != null)
+            return;
+
+        GameOverPannel[] panels = Resources.FindObjectsOfTypeAll<GameOverPannel>();
+        foreach (GameOverPannel panel in panels)
+        {
+            if (panel != null && panel.gameObject.scene.IsValid())
+            {
+                gameOverPannel = panel;
+                return;
+            }
+        }
+    }
+
+    private void ShowFinalResult(bool playerWon)
+    {
+        FindGameOverPanelIfNeeded();
+        if (gameOverPannel == null)
+        {
+            Debug.LogWarning("GameOverPannel was not found in the active scene.");
+            return;
+        }
+
+        Sprite[] resultFrames = playerWon
+            ? dealerAnnoyedFrames
+            : dealerSmileFrames;
+        float resultFrameDuration = playerWon
+            ? dealerAnnoyedFrameDuration
+            : dealerSmileFrameDuration;
+
+        gameOverPannel.Show(
+            playerWon,
+            playerTotalScore,
+            aiTotalScore,
+            resultFrames,
+            resultFrameDuration);
+    }
+
+    public void ShowDebugFinalResult()
+    {
+        if (currentPhase == GamePhase.GameOver)
+            return;
+
+        currentPhase = GamePhase.GameOver;
+        UpdatePhaseUI();
+
+        bool playerWon = playerTotalScore >= aiTotalScore;
+        ShowFinalResult(playerWon);
     }
 
     private int GetEmptySlots(SlotOwner owner)

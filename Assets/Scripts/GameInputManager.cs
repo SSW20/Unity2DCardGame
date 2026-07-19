@@ -16,9 +16,6 @@ public class GameInputManager : MonoBehaviour
     [SerializeField] private Transform graveyardPanel;
 
     [SerializeField] private HandLayoutManager handLayoutManager;
-    [SerializeField] private GameOverPannel gameOverPannel;
-
-    [SerializeField] private SpecialSelectPanel specialSelectPanel;
 
     [SerializeField] private CardManager cardManager;
 
@@ -79,37 +76,9 @@ public class GameInputManager : MonoBehaviour
 
         UpdateScorePreview();
 
-        if (Input.GetKeyDown(KeyCode.V))
-        {
-            if (gameTurnManager != null)
-                gameTurnManager.StartGame();
-        }
-
         if (Input.GetKeyDown(KeyCode.G))
         {
-            gameOverPannel.Show();
-        }
-
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            gameOverPannel.Hide();
-        }
-
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            specialSelectPanel.Show(new List<(string, string)>
-            {
-                ("Flame Boost", "Next card damage x2"),
-                ("Ice Shield", "Reduce damage by 50%"),
-                ("Chain Attack", "Use 2 additional cards next turn"),
-                ("Lucky Draw", "Draw one extra card at the start of your turn"),
-                ("Second Wind", "Recover once when your score falls behind")
-            });
-        }
-
-        if (Input.GetKeyDown(KeyCode.Y))
-        {
-            specialSelectPanel.Hide();
+            gameTurnManager?.ShowDebugFinalResult();
         }
     }
 
