@@ -292,7 +292,11 @@ public class AIController : MonoBehaviour
             rt.localScale = Vector3.one;
 
             CardUI cardUI = card.GetComponent<CardUI>();
-            if (cardUI != null) cardUI.useAnimation = false;
+            if (cardUI != null)
+            {
+                cardUI.useAnimation = false;
+                cardUI.cardType = CardType.Grave;
+            }
 
             CardDragManager drag = card.GetComponent<CardDragManager>();
             if (drag != null) Destroy(drag);

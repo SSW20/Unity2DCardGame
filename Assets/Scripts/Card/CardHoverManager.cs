@@ -47,7 +47,12 @@ public class CardHoverManager : MonoBehaviour
             if (card == null) continue;
             if (card.isDragging) continue;
             if (aiController != null && aiController.IsOwnedCard(card)) continue;
-            if (card.cardType == CardType.Field || card.cardType == CardType.Deck) continue;
+            if (card.cardType == CardType.Field
+                || card.cardType == CardType.Deck
+                || card.cardType == CardType.Grave)
+            {
+                continue;
+            }
 
             if (card.cardType == CardType.Special)
             {

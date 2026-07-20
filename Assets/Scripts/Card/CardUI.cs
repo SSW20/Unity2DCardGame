@@ -7,8 +7,9 @@ public enum CardType
 {
     Hand,    // 손패
     Special, // 특전
-    Field,    // 필드
-    Deck,     // 덱
+    Field,   // 필드
+    Deck,    // 덱
+    Grave    // 무덤 더미 표시용 카드
 }
 public class CardUI : MonoBehaviour, IPointerClickHandler
 {

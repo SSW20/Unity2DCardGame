@@ -115,7 +115,10 @@ public class GameInputManager : MonoBehaviour
         int currentScore = Mathf.RoundToInt(
             cardManager.CalculateScore(currentResult, emptySlots));
 
-        if (hovered != null && hovered.cardType == CardType.Hand)
+        if (hovered != null
+            && hovered.cardType == CardType.Hand
+            && handPanel != null
+            && hovered.transform.IsChildOf(handPanel))
         {
             List<PokerCardData> previewPool = new List<PokerCardData>(currentPool);
             previewPool.Add(hovered.pokerCardData);
@@ -822,7 +825,11 @@ public class GameInputManager : MonoBehaviour
             rt.localScale = Vector3.one;
 
             CardUI cardUI = card.GetComponent<CardUI>();
-            if (cardUI != null) cardUI.useAnimation = false;
+            if (cardUI != null)
+            {
+                cardUI.useAnimation = false;
+                cardUI.cardType = CardType.Grave;
+            }
 
             CardDragManager dragManager = card.GetComponent<CardDragManager>();
             if (dragManager != null) Destroy(dragManager);
