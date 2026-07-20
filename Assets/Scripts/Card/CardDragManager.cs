@@ -18,7 +18,15 @@ public class CardDragManager : MonoBehaviour,
 
     public CardManager cardManager;
 
+    // 플레이어 카드가 필드에 배치되었음을 알릴 입력 관리자입니다.
+    // Inspector 연결 없이 GameInputManager가 카드 생성 시 자동으로 넣어줍니다.
+    private GameInputManager gameInputManager;
 
+    public void Initialize(CardManager manager, GameInputManager inputManager)
+    {
+        cardManager = manager;
+        gameInputManager = inputManager;
+    }
 
     void Awake()
     {
@@ -28,6 +36,10 @@ public class CardDragManager : MonoBehaviour,
         canvasGroup = GetComponent<CanvasGroup>();
         if (canvasGroup == null)
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
+
+        // 씬에 직접 배치된 카드도 동작할 수 있도록 안전하게 자동 탐색합니다.
+        if (gameInputManager == null)
+            gameInputManager = FindAnyObjectByType<GameInputManager>();
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -99,7 +111,10 @@ public class CardDragManager : MonoBehaviour,
             targetSlot.SetCard(gameObject);
 
             if (cardUI != null && cardManager != null)
-                cardManager.MoveCard(cardUI.pokerCardData, cardManager.fieldList);   // Field로 보냄
+                cardManager.MoveCard(
+                    cardUI.pokerCardData,
+                    cardManager.playerHand,
+                    cardManager.fieldList);   // Field로 보냄
 
             if (cardUI != null)
             {
@@ -113,6 +128,9 @@ public class CardDragManager : MonoBehaviour,
             // 손패 재정렬
             if (handLayoutManager != null)
                 handLayoutManager.UpdateLayout();
+
+            // 마지막 빈 슬롯까지 채웠다면 플레이어를 즉시 강제 Stop 처리합니다.
+            gameInputManager?.NotifyPlayerCardPlaced();
         }
         else
         {

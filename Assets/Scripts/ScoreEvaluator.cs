@@ -4,7 +4,7 @@ public struct SettlementResult
 {
     public List<List<PokerCardData>> triples;
     public List<List<PokerCardData>> fourOfAKinds;
-    public List<List<PokerCardData>> straights;   
+    public List<List<PokerCardData>> straights;
 
     public HashSet<PokerCardData> usedCards;
 
@@ -40,6 +40,10 @@ public static class ScoreEvaluator
         var rankGroups = new Dictionary<int, List<PokerCardData>>();
         foreach (var c in pool)
         {
+            // 조커는 슬롯만 차지하며 어떠한 족보에도 참여하지 않는다.
+            if (c.IsJoker)
+                continue;
+
             int r = (int)c.rank;
             if (!rankGroups.ContainsKey(r)) rankGroups[r] = new List<PokerCardData>();
             rankGroups[r].Add(c);
@@ -71,7 +75,7 @@ public static class ScoreEvaluator
         }
     }
 
-   private static void EvaluateStraight(Dictionary<int, List<PokerCardData>> rankGroups, ref SettlementResult result)
+    private static void EvaluateStraight(Dictionary<int, List<PokerCardData>> rankGroups, ref SettlementResult result)
     {
         Dictionary<int, int> usedIndex = new Dictionary<int, int>();
         foreach (var key in rankGroups.Keys) usedIndex[key] = 0;
@@ -127,6 +131,10 @@ public static class ScoreEvaluator
 
         foreach (PokerCardData card in fieldCards)
         {
+            // 조커는 결산 후 덱으로 돌아가므로 새 무덤 카드 수에 포함하지 않는다.
+            if (card.IsJoker)
+                continue;
+
             if (usedCards == null || !usedCards.Contains(card))
                 count++;
         }

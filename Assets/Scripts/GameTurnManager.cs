@@ -51,6 +51,10 @@ public class GameTurnManager : MonoBehaviour
     [SerializeField] private Button stopButton;
     [SerializeField] private Button turnEndButton;
 
+    [Header("Forced Stop Messages")]
+    [SerializeField] private float jokerForcedStopMessageDuration = 1.5f;
+    [SerializeField] private float fieldFullForcedStopMessageDuration = 1.5f;
+
     [Header("Turn Banner")]
     [SerializeField] private GameObject turnBannerObject;
     [SerializeField] private Image turnBannerImage;
@@ -110,8 +114,8 @@ public class GameTurnManager : MonoBehaviour
 
     private void BeginGameSetup()
     {
-        // 씬이 처음 시작될 때만 특전 데이터를 초기화한다.
-        // 이후 기존 시작 전 특전 선택창의 선택 결과는 StartGame()에서 지우지 않는다.
+        // 씬이 처음 시작될 때 플레이어 특전과
+        // 이전 AI 랜덤 특전 데이터를 모두 초기화한다.
         if (playerCardManager != null)
             playerCardManager.ResetPerks();
 
@@ -127,8 +131,7 @@ public class GameTurnManager : MonoBehaviour
         aiTotalScore = 0;
         currentRound = 0;
 
-        // 기존 시작 전 특전 선택창의 결과와 충돌하지 않도록
-        // StartGame()에서는 플레이어/AI 특전 목록을 초기화하지 않는다.
+        // 특전 목록은 BeginGameSetup()에서 한 번만 초기화한다.
         UpdateScoreUI();
         UpdatePerkDebugUI();
         StartNewRound();
@@ -171,7 +174,7 @@ public class GameTurnManager : MonoBehaviour
             || playerCardManager.OwnedPerks.Count >= CardManager.MaxPerkCount
             || specialSelectPanel == null)
         {
-            SelectAIPerkThenStartPlayerTurn();
+            StartPlayerTurnAfterPerkSelection();
             return;
         }
 
@@ -185,7 +188,7 @@ public class GameTurnManager : MonoBehaviour
 
         if (candidates.Count == 0)
         {
-            SelectAIPerkThenStartPlayerTurn();
+            StartPlayerTurnAfterPerkSelection();
             return;
         }
 
@@ -194,11 +197,11 @@ public class GameTurnManager : MonoBehaviour
             TryAddPlayerPerk,
             _ =>
             {
-                SelectAIPerkThenStartPlayerTurn();
+                StartPlayerTurnAfterPerkSelection();
             });
 
         if (!shown)
-            SelectAIPerkThenStartPlayerTurn();
+            StartPlayerTurnAfterPerkSelection();
     }
 
     private bool TryAddPlayerPerk(PerkType perk)
@@ -210,54 +213,10 @@ public class GameTurnManager : MonoBehaviour
         return true;
     }
 
-    private void SelectAIPerkThenStartPlayerTurn()
+    private void StartPlayerTurnAfterPerkSelection()
     {
-        TrySelectAIPerk();
         UpdatePerkDebugUI();
         StartPlayerTurn();
-    }
-
-    private void TrySelectAIPerk()
-    {
-        if (aiCardManager == null
-            || aiCardManager.OwnedPerks.Count >= CardManager.MaxPerkCount)
-        {
-            return;
-        }
-
-        System.Collections.Generic.List<PerkType> differentCandidates =
-            new System.Collections.Generic.List<PerkType>();
-        System.Collections.Generic.List<PerkType> fallbackCandidates =
-            new System.Collections.Generic.List<PerkType>();
-
-        foreach (PerkType perk in PerkCatalog.All)
-        {
-            if (aiCardManager.HasPerk(perk))
-                continue;
-
-            fallbackCandidates.Add(perk);
-            if (playerCardManager == null || !playerCardManager.HasPerk(perk))
-                differentCandidates.Add(perk);
-        }
-
-        System.Collections.Generic.List<PerkType> candidates =
-            differentCandidates.Count > 0 ? differentCandidates : fallbackCandidates;
-        if (candidates.Count == 0)
-            return;
-
-        PerkType selectedPerk = candidates[UnityEngine.Random.Range(0, candidates.Count)];
-        if (!aiCardManager.TryAddPerk(selectedPerk))
-            return;
-
-        if (specialSelectPanel != null
-            && !specialSelectPanel.TryDisplayPerk(selectedPerk, SlotOwner.Enemy))
-        {
-            Debug.LogWarning("Could not display the AI perk card in an AI special slot.");
-        }
-
-        Debug.Log(
-            $"[AI Perk] Round {currentRound}: "
-            + $"{PerkCatalog.GetName(selectedPerk)} acquired");
     }
 
     private void StartPlayerTurn()
@@ -314,7 +273,10 @@ public class GameTurnManager : MonoBehaviour
         currentPhase = GamePhase.AITurn;
         UpdatePhaseUI();
 
-        aiController.TakeTurn(OnAITurnFinished, fastMode);
+        aiController.TakeTurn(
+            OnAITurnFinished,
+            fastMode,
+            allowFieldRemovalPerk: !playerStopped);
     }
 
     private IEnumerator ShowTurnBanner(string message, float duration)
@@ -364,7 +326,72 @@ public class GameTurnManager : MonoBehaviour
     {
         if (currentPhase != GamePhase.PlayerTurn || playerActionButtonsBlocked) return;
 
+        if (playerCardManager != null && playerCardManager.HasJokerInHand())
+        {
+            StartCoroutine(ForcePlayerStopBecauseOfJoker());
+            return;
+        }
+
         gameInputManager.CleanupPlayerHandAfterTurn();
+
+        currentTurn = TurnOwner.Player;
+        GoToNextTurn();
+    }
+
+    private IEnumerator ForcePlayerStopBecauseOfJoker()
+    {
+        currentPhase = GamePhase.Stop;
+        playerStopped = true;
+        UpdatePhaseUI();
+
+        int jokerCount = playerCardManager != null
+            ? playerCardManager.CountJokersInHand()
+            : 0;
+
+        Debug.LogWarning(
+            $"손패에 조커 {jokerCount}장이 남아 있어 플레이어가 강제로 Stop됩니다.");
+
+        gameInputManager.CleanupPlayerHandAfterTurn();
+
+        yield return ShowTurnBanner(
+            "조커 미사용: 강제 STOP",
+            jokerForcedStopMessageDuration);
+
+        currentTurn = TurnOwner.Player;
+        GoToNextTurn();
+    }
+
+    /// <summary>
+    /// 플레이어의 일반 필드 슬롯이 모두 찼을 때 호출합니다.
+    /// 마지막 카드를 놓는 즉시 남은 손패를 덱으로 돌려보내고 강제 Stop합니다.
+    /// </summary>
+    public void ForcePlayerStopBecauseFieldIsFull()
+    {
+        if (currentPhase != GamePhase.PlayerTurn
+            || playerActionButtonsBlocked
+            || playerStopped)
+        {
+            return;
+        }
+
+        StartCoroutine(ForcePlayerStopBecauseFieldIsFullRoutine());
+    }
+
+    private IEnumerator ForcePlayerStopBecauseFieldIsFullRoutine()
+    {
+        // 코루틴은 첫 yield 전까지 즉시 실행되므로,
+        // 중복 호출이 들어와도 이후 호출은 PlayerTurn 조건을 통과하지 못합니다.
+        currentPhase = GamePhase.Stop;
+        playerStopped = true;
+        UpdatePhaseUI();
+
+        Debug.LogWarning("플레이어 필드 슬롯이 모두 차서 강제로 Stop됩니다.");
+
+        gameInputManager.CleanupPlayerHandAfterTurn();
+
+        yield return ShowTurnBanner(
+            "필드 슬롯 가득 참: 강제 STOP",
+            fieldFullForcedStopMessageDuration);
 
         currentTurn = TurnOwner.Player;
         GoToNextTurn();
@@ -473,7 +500,7 @@ public class GameTurnManager : MonoBehaviour
 
 
     // 질문 : 이 함수를 통해 점수 차 누적 값을 빨간색 슬라이드에 더하는 거면 디버그 보다는 실제로 값을 조정하는 게 좋을듯요.
-    
+
     // 실제로 값을 조정한다는 말이 무슨 뜻인가요? 
     private void ApplyRoundScore(float playerRoundScore, float aiRoundScore)
     {
@@ -690,10 +717,10 @@ public class GameTurnManager : MonoBehaviour
         if (roundText != null)
             roundText.text = $"Round {currentRound}";
 
-        if (aiPerkText != null && aiCardManager != null)
+        if (aiPerkText != null)
         {
             aiPerkText.text =
-                $"AI Perks\n{PerkCatalog.JoinNames(aiCardManager.OwnedPerks)}";
+                $"AI Perk\n{AIController.FieldRemovalPerkName}";
         }
     }
 
@@ -742,7 +769,7 @@ public class GameTurnManager : MonoBehaviour
     // 예를들어 AI턴일 떄 플레이어의 카드움직임을 막고, 버튼을 비활성화 시킨다던지, 플레이어의 턴일 떄 AI의 행동을 막고
     // 플레이어가 먼저 결산 시 AI에게 배속을 걸고
     // 결산 페이즈일 떄는 양쪽 다 조작을 막는게 좋겟죠?
-    
+
     //ai 배속은 제가 했어요
     //다른 건 다 동의해요. 근데 ai 턴일 때는 어짜피 플레이어의 손에는 아무런 카드가 없으니 플레이어의 카드 움직임을 막는 건 추가할 필요 없지 않을까요?
     private void Update()

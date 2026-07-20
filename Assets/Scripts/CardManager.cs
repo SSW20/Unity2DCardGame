@@ -5,21 +5,45 @@ using UnityEngine.UI;
 
 public enum CardSuit { Spade, Heart, Diamond, Club }
 
+public enum CardKind
+{
+    Normal,
+    Joker
+}
+
 public enum CardRank { Ace = 1, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King }
 
 [System.Serializable]
 public struct PokerCardData
 {
+    public const int JokerCost = 10;
+
+    public CardKind kind;
     public CardSuit suit;
     public CardRank rank;
-
     public Sprite sprite;
-    
+
+    public bool IsJoker => kind == CardKind.Joker;
+    public int Cost => IsJoker ? JokerCost : (int)rank;
+
     public PokerCardData(CardSuit suit, CardRank rank, Sprite sprite)
     {
+        kind = CardKind.Normal;
         this.suit = suit;
         this.rank = rank;
         this.sprite = sprite;
+    }
+
+    public static PokerCardData CreateJoker(Sprite sprite)
+    {
+        return new PokerCardData
+        {
+            kind = CardKind.Joker,
+            // 조커는 족보 계산에서 제외되므로 suit/rank 값은 사용하지 않는다.
+            suit = CardSuit.Spade,
+            rank = CardRank.Ace,
+            sprite = sprite
+        };
     }
 }
 
@@ -29,6 +53,12 @@ public class CardManager : MonoBehaviour
 
     [Header("코스트 시스템")]
     [SerializeField] private int maxCostPerTurn = 21;
+
+    [Header("조커 카드")]
+    [Tooltip("플레이어 CardManager에서만 켜세요. AI에 조커를 추가할 때는 AI CardManager에서도 켤 수 있습니다.")]
+    [SerializeField] private bool includeJokersInDeck = false;
+    [SerializeField, Min(0)] private int jokerCount = 5;
+    [SerializeField] private Sprite jokerSprite;
 
     [Header("특전 시스템")]
     [SerializeField] private List<PerkType> ownedPerks = new List<PerkType>();
@@ -41,13 +71,15 @@ public class CardManager : MonoBehaviour
     public List<PokerCardData> pokerDeck = new List<PokerCardData>();
     public List<PokerCardData> playerHand = new List<PokerCardData>();
 
-    public List<PokerCardData> fieldList = new List<PokerCardData>();  
-    public List<PokerCardData> graveList = new List<PokerCardData>();   
-    public List<PokerCardData> specialList = new List<PokerCardData>();  
-    
+    public List<PokerCardData> fieldList = new List<PokerCardData>();
+    public List<PokerCardData> graveList = new List<PokerCardData>();
+    public List<PokerCardData> specialList = new List<PokerCardData>();
+
     [SerializeField] private TextMeshProUGUI playerCostText;
 
     public CardImageData cardImageData;
+
+    public Sprite JokerSprite => jokerSprite;
 
     void Awake()
     {
@@ -66,9 +98,21 @@ public class CardManager : MonoBehaviour
         {
             for (int r = 1; r <= 13; r++)
             {
-                PokerCardData newCard = new PokerCardData((CardSuit)s, (CardRank)r, cardImageData.GetSprite((CardSuit)s, (CardRank)r));
+                PokerCardData newCard = new PokerCardData(
+                    (CardSuit)s,
+                    (CardRank)r,
+                    cardImageData.GetSprite((CardSuit)s, (CardRank)r));
                 pokerDeck.Add(newCard);
             }
+        }
+
+        if (includeJokersInDeck)
+        {
+            if (jokerSprite == null)
+                Debug.LogWarning($"{name}: Joker Sprite가 연결되지 않았습니다.");
+
+            for (int i = 0; i < jokerCount; i++)
+                pokerDeck.Add(PokerCardData.CreateJoker(jokerSprite));
         }
     }
 
@@ -96,13 +140,13 @@ public class CardManager : MonoBehaviour
     {
         // 덱에서 카드가 부족할 일은 없음
         List<PokerCardData> tempPlayerHand = new List<PokerCardData>();
-        foreach(var card in playerHand)
+        foreach (var card in playerHand)
         {
             tempPlayerHand.Add(card);
         }
-        
+
         playerHand.Clear();
-        foreach(var card in tempPlayerHand)
+        foreach (var card in tempPlayerHand)
         {
             pokerDeck.Add(card);
         }
@@ -130,23 +174,24 @@ public class CardManager : MonoBehaviour
 
     public bool CanPlayerAffordCard(PokerCardData card)
     {
-        int cardCost = (int)card.rank;
+        int cardCost = card.Cost;
         return playerCurrentCost >= cardCost;
     }
 
     public bool CanAIAffordCard(PokerCardData card)
     {
-        int cardCost = (int)card.rank;
+        int cardCost = card.Cost;
         return aiCurrentCost >= cardCost;
     }
 
     public bool SpendPlayerCost(PokerCardData card)
     {
-        int cardCost = (int)card.rank;
+        int cardCost = card.Cost;
         if (playerCurrentCost >= cardCost)
         {
             playerCurrentCost -= cardCost;
-            playerCostText.text = playerCurrentCost.ToString();
+            if (playerCostText != null)
+                playerCostText.text = playerCurrentCost.ToString();
             return true;
         }
         Debug.Log($"코스트 부족! 필요: {cardCost}, 보유: {playerCurrentCost}");
@@ -155,7 +200,7 @@ public class CardManager : MonoBehaviour
 
     public bool SpendAICost(PokerCardData card)
     {
-        int cardCost = (int)card.rank;
+        int cardCost = card.Cost;
         if (aiCurrentCost >= cardCost)
         {
             aiCurrentCost -= cardCost;
@@ -199,41 +244,61 @@ public class CardManager : MonoBehaviour
         return true;
     }
 
-    public bool TryAddRandomPerk(out PerkType selectedPerk)
-    {
-        List<PerkType> candidates = new List<PerkType>();
-
-        foreach (PerkType perk in PerkCatalog.All)
-        {
-            if (!ownedPerks.Contains(perk))
-                candidates.Add(perk);
-        }
-
-        if (ownedPerks.Count >= MaxPerkCount || candidates.Count == 0)
-        {
-            selectedPerk = default(PerkType);
-            return false;
-        }
-
-        int randomIndex = UnityEngine.Random.Range(0, candidates.Count);
-        selectedPerk = candidates[randomIndex];
-
-        return TryAddPerk(selectedPerk);
-    }
-
     public void ResetPerks()
     {
         ownedPerks.Clear();
     }
 
+    public bool MoveCard(
+        PokerCardData card,
+        List<PokerCardData> source,
+        List<PokerCardData> destination)
+    {
+        if (source == null || destination == null || ReferenceEquals(source, destination))
+            return false;
+
+        int cardIndex = source.IndexOf(card);
+        if (cardIndex < 0)
+            return false;
+
+        PokerCardData movedCard = source[cardIndex];
+        source.RemoveAt(cardIndex);
+        destination.Add(movedCard);
+        return true;
+    }
+
+    // 기존 호출과의 호환용이다. 동일한 조커가 여러 장이므로 새 코드에서는
+    // 출발 목록을 명시하는 MoveCard(card, source, destination)를 사용한다.
     public bool MoveCard(PokerCardData card, List<PokerCardData> destination)
     {
-        if (pokerDeck.Remove(card))   { destination.Add(card); return true; }
-        if (playerHand.Remove(card))  { destination.Add(card); return true; }
-        if (fieldList.Remove(card))   { destination.Add(card); return true; }
-        if (graveList.Remove(card))   { destination.Add(card); return true; }
+        if (MoveCard(card, playerHand, destination)) return true;
+        if (MoveCard(card, fieldList, destination)) return true;
+        if (MoveCard(card, graveList, destination)) return true;
+        if (MoveCard(card, pokerDeck, destination)) return true;
+        return false;
+    }
+
+    public bool HasJokerInHand()
+    {
+        foreach (PokerCardData card in playerHand)
+        {
+            if (card.IsJoker)
+                return true;
+        }
 
         return false;
+    }
+
+    public int CountJokersInHand()
+    {
+        int count = 0;
+        foreach (PokerCardData card in playerHand)
+        {
+            if (card.IsJoker)
+                count++;
+        }
+
+        return count;
     }
 
     public SettlementResult Settle()
@@ -258,7 +323,12 @@ public class CardManager : MonoBehaviour
 
         foreach (var card in fieldSnapshot)
         {
-            if (result.usedCards.Contains(card))
+            // 조커는 족보와 점수에 참여하지 않으며, 결산 후 항상 덱으로 돌아간다.
+            if (card.IsJoker)
+            {
+                pokerDeck.Add(card);
+            }
+            else if (result.usedCards.Contains(card))
             {
                 pokerDeck.Add(card);
             }
@@ -293,7 +363,10 @@ public class CardManager : MonoBehaviour
             float costStr = 0f;
 
             foreach (var card in straight)
-                costStr += (int)card.rank;
+            {
+                if (!card.IsJoker)
+                    costStr += (int)card.rank;
+            }
 
             float strScore = costStr * GetStraightMultiplier(cardCount);
 
@@ -327,7 +400,10 @@ public class CardManager : MonoBehaviour
     {
         float cost = 0f;
         foreach (PokerCardData card in cards)
-            cost += (int)card.rank;
+        {
+            if (!card.IsJoker)
+                cost += (int)card.rank;
+        }
 
         return cost;
     }

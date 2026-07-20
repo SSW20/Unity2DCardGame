@@ -738,6 +738,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxCostPerTurn: 21
+  includeJokersInDeck: 1
+  jokerCount: 5
+  jokerSprite: {fileID: 0}
   ownedPerks: 
   pokerDeck: []
   playerHand: []
@@ -2643,6 +2646,7 @@ MonoBehaviour:
   aiPerkText: {fileID: 0}
   stopButton: {fileID: 1093045712}
   turnEndButton: {fileID: 531786067}
+  jokerForcedStopMessageDuration: 1.5
   turnBannerObject: {fileID: 1909341937}
   turnBannerImage: {fileID: 1909341939}
   turnBannerText: {fileID: 1518031431}
@@ -4410,6 +4414,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxCostPerTurn: 21
+  includeJokersInDeck: 0
+  jokerCount: 5
+  jokerSprite: {fileID: 0}
   ownedPerks: 
   pokerDeck: []
   playerHand: []
@@ -7455,6 +7462,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   aiCardManager: {fileID: 1287922615}
+  playerGameInputManager: {fileID: 0}
+  fieldRemovalChancePercent: 50
+  fieldRemovalMoveDuration: 0.45
   aiFieldSlotContainer: {fileID: 1794740811}
   cardPrefab: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}
   aiDeckPanel: {fileID: 212074662}
@@ -7552,6 +7562,7 @@ MonoBehaviour:
   cardBackImage: {fileID: 0}
   cardType: 0
   pokerCardData:
+    kind: 0
     suit: 0
     rank: 0
     sprite: {fileID: 0}

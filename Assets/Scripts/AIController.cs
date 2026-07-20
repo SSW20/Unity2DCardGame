@@ -5,8 +5,17 @@ using DG.Tweening;
 using System;
 public class AIController : MonoBehaviour
 {
+    public const string FieldRemovalPerkName = "강제 회수";
+    public const string FieldRemovalPerkDescription =
+        "AI 턴 시작 시 설정된 확률로 플레이어 필드의 일반 카드 1장을 덱으로 되돌립니다.";
+
     [Header("AI Data")]
     [SerializeField] private CardManager aiCardManager;
+    [SerializeField] private GameInputManager playerGameInputManager;
+
+    [Header("AI Fixed Perk")]
+    [SerializeField, Range(0f, 100f)] private float fieldRemovalChancePercent = 5f;
+    [SerializeField] private float fieldRemovalMoveDuration = 0.45f;
 
     [Header("AI Field Slots")]
     [SerializeField] private Transform aiFieldSlotContainer;
@@ -39,20 +48,37 @@ public class AIController : MonoBehaviour
 
     private int turnsSinceLastSettle = 0;
 
-    public void TakeTurn(Action<bool> onFinished, bool fastMode = false)
+    private void Awake()
     {
-        StartCoroutine(TakeTurnRoutine(onFinished, fastMode));
+        // Inspector 연결을 놓쳐도 씬에 GameInputManager가 하나라면 자동으로 찾는다.
+        if (playerGameInputManager == null)
+            playerGameInputManager = FindFirstObjectByType<GameInputManager>();
+    }
+
+    public void TakeTurn(
+        Action<bool> onFinished,
+        bool fastMode = false,
+        bool allowFieldRemovalPerk = true)
+    {
+        StartCoroutine(TakeTurnRoutine(onFinished, fastMode, allowFieldRemovalPerk));
     }
 
     public void TakeTurn()
     {
-        TakeTurn(null, false);
+        TakeTurn(null, false, true);
     }
 
-    private IEnumerator TakeTurnRoutine(Action<bool> onFinished, bool fastMode)
+    private IEnumerator TakeTurnRoutine(
+        Action<bool> onFinished,
+        bool fastMode,
+        bool allowFieldRemovalPerk)
     {
         float delayScale = fastMode ? fastModeDelayScale : 1f;
         turnsSinceLastSettle++;
+
+        // 플레이어가 이미 Stop한 경우에는 AI의 필드 삭제 특전이 발동하지 않는다.
+        if (allowFieldRemovalPerk)
+            yield return TryActivateFieldRemovalPerk(delayScale);
 
         // AI 코스트 초기화
         aiCardManager.ResetAICost();
@@ -123,7 +149,10 @@ public class AIController : MonoBehaviour
             rt.localRotation = Quaternion.identity;
 
             slot.SetCard(cardObj);
-            aiCardManager.MoveCard(card, aiCardManager.fieldList);
+            aiCardManager.MoveCard(
+                card,
+                aiCardManager.playerHand,
+                aiCardManager.fieldList);
 
             yield return new WaitForSeconds(perCardDelay * delayScale);
         }
@@ -140,6 +169,29 @@ public class AIController : MonoBehaviour
         bool aiChoseStop = DecideStopOrTurnEnd(remainingEmptySlots);
 
         onFinished?.Invoke(aiChoseStop);
+    }
+
+    private IEnumerator TryActivateFieldRemovalPerk(float delayScale)
+    {
+        float chance = Mathf.Clamp(fieldRemovalChancePercent, 0f, 100f);
+        if (UnityEngine.Random.Range(0f, 100f) >= chance)
+            yield break;
+
+        if (playerGameInputManager == null)
+        {
+            Debug.LogWarning("AI 특전용 Player GameInputManager가 연결되지 않았습니다.");
+            yield break;
+        }
+
+        bool removed = false;
+        yield return playerGameInputManager.RemoveRandomNormalFieldCardToDeck(
+            fieldRemovalMoveDuration * delayScale,
+            success => removed = success);
+
+        if (removed)
+            Debug.Log($"[AI Perk] {FieldRemovalPerkName} 발동: 플레이어 일반 카드 1장을 덱으로 되돌렸습니다.");
+        else
+            Debug.Log($"[AI Perk] {FieldRemovalPerkName} 발동 실패: 제거 가능한 일반 카드가 없습니다.");
     }
 
     // 비어있는 AI 슬롯 찾기
@@ -256,8 +308,13 @@ public class AIController : MonoBehaviour
         {
             if (obj == null) continue;
             CardUI ui = obj.GetComponent<CardUI>();
-            if (ui != null && ui.pokerCardData.suit == card.suit && ui.pokerCardData.rank == card.rank)
+            if (ui != null
+                && ui.pokerCardData.kind == card.kind
+                && ui.pokerCardData.suit == card.suit
+                && ui.pokerCardData.rank == card.rank)
+            {
                 return obj;
+            }
         }
         return null;
     }
@@ -327,7 +384,7 @@ public class AIController : MonoBehaviour
                 if ((mask & (1 << i)) != 0)
                 {
                     combo.Add(aiHand[i]);
-                    totalCost += (int)aiHand[i].rank;
+                    totalCost += aiHand[i].Cost;
                 }
             }
 

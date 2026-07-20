@@ -343,7 +343,16 @@ public class GameInputManager : MonoBehaviour
         {
             cardUI.useAnimation = false;
             cardUI.cardType = CardType.Deck;
-            cardUI.FlipCard(false);
+
+            if (cardManager != null && cardManager.JokerSprite != null)
+            {
+                cardUI.SetPokerData(PokerCardData.CreateJoker(cardManager.JokerSprite));
+                cardUI.FlipCard(true);
+            }
+            else
+            {
+                cardUI.FlipCard(false);
+            }
         }
 
         CardDragManager dragManager = jokerCard.GetComponent<CardDragManager>();
@@ -358,7 +367,7 @@ public class GameInputManager : MonoBehaviour
             "JokerDescription",
             "<size=115%><b>조커 카드</b></size>\n" +
             "코스트: 10\n" +
-            "이번 턴에 이 카드를 내지 않으면\n강제로 결산됩니다.",
+            "이번 턴에 손패의 조커를 모두 내지 않으면\n강제로 STOP됩니다.",
             new Vector2(0.77f, 0.67f),
             new Vector2(0.97f, 0.84f),
             scoreInfoBodyFontSize * 0.85f,
@@ -515,8 +524,14 @@ public class GameInputManager : MonoBehaviour
         int count = 0;
         CardSlot[] allSlots = fieldSlotContainer.GetComponentsInChildren<CardSlot>();
         foreach (var slot in allSlots)
-            if (slot.owner == SlotOwner.Player && !slot.IsOccupied)
+        {
+            if (slot.owner == SlotOwner.Player
+                && slot.category == SlotCategory.Field
+                && !slot.IsOccupied)
+            {
                 count++;
+            }
+        }
         return count;
     }
 
@@ -560,7 +575,9 @@ public class GameInputManager : MonoBehaviour
         CardDragManager cardDragManager = newCard.GetComponent<CardDragManager>();
         if (cardDragManager != null)
         {
-            cardDragManager.cardManager = cardManager;
+            // CardManager와 GameInputManager를 자동 연결합니다.
+            // 카드 프리팹 Inspector에서 별도로 연결할 필요가 없습니다.
+            cardDragManager.Initialize(cardManager, this);
         }
 
         // 덱 월드 좌표 → handPanel 로컬 좌표로 변환해서 시작 위치 설정
@@ -568,6 +585,22 @@ public class GameInputManager : MonoBehaviour
         newCard.transform.localScale = Vector3.one;
 
         handLayoutManager.UpdateLayout();
+    }
+
+    /// <summary>
+    /// 플레이어 카드가 필드에 정상 배치된 직후 호출됩니다.
+    /// 플레이어의 일반 필드 슬롯이 모두 찼으면 즉시 강제 Stop합니다.
+    /// </summary>
+    public void NotifyPlayerCardPlaced()
+    {
+        if (!isPlayerTurn)
+            return;
+
+        if (GetEmptyPlayerSlots() > 0)
+            return;
+
+        Debug.LogWarning("플레이어 필드 슬롯이 모두 찼습니다. 강제 Stop을 요청합니다.");
+        gameTurnManager?.ForcePlayerStopBecauseFieldIsFull();
     }
 
     // 플레이어 턴 종료 → AI 턴으로
@@ -584,6 +617,77 @@ public class GameInputManager : MonoBehaviour
 
         RemoveCardFromHand();
         cardManager.RemoveCardAll(cardManager.pokerDeck);
+    }
+
+    /// <summary>
+    /// AI 고유 특전: 플레이어 필드의 일반 카드 중 무작위 1장을 덱으로 되돌린다.
+    /// 조커와 특전 카드는 후보에서 제외한다.
+    /// </summary>
+    public IEnumerator RemoveRandomNormalFieldCardToDeck(
+        float moveDuration,
+        System.Action<bool> onCompleted)
+    {
+        List<CardSlot> candidates = new List<CardSlot>();
+        CardSlot[] slots = fieldSlotContainer.GetComponentsInChildren<CardSlot>();
+
+        foreach (CardSlot slot in slots)
+        {
+            if (slot.owner != SlotOwner.Player
+                || slot.category != SlotCategory.Field
+                || !slot.IsOccupied
+                || slot.CurrentCardObject == null)
+            {
+                continue;
+            }
+
+            CardUI cardUI = slot.CurrentCardObject.GetComponent<CardUI>();
+            if (cardUI == null || cardUI.pokerCardData.IsJoker)
+                continue;
+
+            candidates.Add(slot);
+        }
+
+        if (candidates.Count == 0)
+        {
+            onCompleted?.Invoke(false);
+            yield break;
+        }
+
+        CardSlot selectedSlot = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+        GameObject selectedCardObject = selectedSlot.CurrentCardObject;
+        CardUI selectedCardUI = selectedCardObject.GetComponent<CardUI>();
+        PokerCardData selectedCardData = selectedCardUI.pokerCardData;
+
+        bool moved = cardManager.MoveCard(
+            selectedCardData,
+            cardManager.fieldList,
+            cardManager.pokerDeck);
+
+        if (!moved)
+        {
+            Debug.LogWarning("AI 특전 대상 카드의 데이터를 필드에서 찾지 못했습니다.");
+            onCompleted?.Invoke(false);
+            yield break;
+        }
+
+        cardManager.ShuffleDeck(cardManager.pokerDeck);
+        selectedSlot.ClearSlot();
+
+        selectedCardUI.SetHover(false);
+        selectedCardUI.useAnimation = false;
+
+        CardDragManager dragManager = selectedCardObject.GetComponent<CardDragManager>();
+        if (dragManager != null)
+            dragManager.enabled = false;
+
+        float duration = Mathf.Max(0.01f, moveDuration);
+        Sequence seq = DOTween.Sequence();
+        seq.Append(selectedCardObject.transform.DOMove(deckPanel.position, duration).SetEase(Ease.InCubic));
+        seq.Join(selectedCardObject.transform.DOScale(Vector3.zero, duration));
+        yield return seq.WaitForCompletion();
+
+        Destroy(selectedCardObject);
+        onCompleted?.Invoke(true);
     }
 
     private void RemoveCardFromHand()
