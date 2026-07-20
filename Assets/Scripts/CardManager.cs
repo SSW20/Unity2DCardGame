@@ -353,7 +353,7 @@ public class CardManager : MonoBehaviour
         // 보유 특전에 따라 점수식의 계수를 결정한다.
         // ===== 트리플 / 포카드 점수 =====
         foreach (var triple in result.triples)
-            tripleAndStraightScore += (GetRankCost(triple) + 10f) * 3f;
+            tripleAndStraightScore += (GetRankCost(triple) + 15f) * 4f;
 
         foreach (var fourOfAKind in result.fourOfAKinds)
             tripleAndStraightScore += (GetRankCost(fourOfAKind) + 10f) * 8f;
