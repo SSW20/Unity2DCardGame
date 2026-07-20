@@ -41,6 +41,7 @@ public class GameInputManager : MonoBehaviour
     [SerializeField] private float scoreInfoBodyFontSize = 26f;
 
     private bool isPlayerTurn = false;
+    private Coroutine drawCardsCoroutine;
     private bool scoreTextWarningShown;
 
     private CardUI lastHovered;
@@ -546,16 +547,31 @@ public class GameInputManager : MonoBehaviour
         cardManager.ResetPlayerCost();
 
         // 카드 드로우
-        StartCoroutine(DrawCards());
+        CancelPendingDraw();
+        drawCardsCoroutine = StartCoroutine(DrawCards());
     }
 
     private IEnumerator DrawCards(int count = 5)
     {
         for (int i = 0; i < count; i++)
         {
+            if (!isPlayerTurn)
+                break;
+
             AddCardToHand();
             yield return new WaitForSeconds(0.1f);
         }
+
+        drawCardsCoroutine = null;
+    }
+
+    private void CancelPendingDraw()
+    {
+        if (drawCardsCoroutine == null)
+            return;
+
+        StopCoroutine(drawCardsCoroutine);
+        drawCardsCoroutine = null;
     }
 
     private void AddCardToHand()
@@ -614,6 +630,7 @@ public class GameInputManager : MonoBehaviour
     public void CleanupPlayerHandAfterTurn()
     {
         isPlayerTurn = false;
+        CancelPendingDraw();
 
         RemoveCardFromHand();
         cardManager.RemoveCardAll(cardManager.pokerDeck);

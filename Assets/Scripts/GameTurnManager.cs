@@ -326,6 +326,10 @@ public class GameTurnManager : MonoBehaviour
     {
         if (currentPhase != GamePhase.PlayerTurn || playerActionButtonsBlocked) return;
 
+        // 같은 프레임의 연속 입력도 다시 진입하지 못하도록 즉시 버튼을 잠근다.
+        currentPhase = GamePhase.Stop;
+        UpdatePhaseUI();
+
         if (playerCardManager != null && playerCardManager.HasJokerInHand())
         {
             StartCoroutine(ForcePlayerStopBecauseOfJoker());
