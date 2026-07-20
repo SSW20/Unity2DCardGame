@@ -25,15 +25,15 @@ public static class PerkCatalog
         switch (perk)
         {
             case PerkType.TripleCostBoost:
-                return "트리플 코스트 강화";
+                return "같은 숫자 수집가";
             case PerkType.HighScoreBonus:
-                return "고득점 보너스";
+                return "공세";
             case PerkType.EmptySlotBoost:
-                return "빈 슬롯 보너스 강화";
+                return "실전압축 슬롯";
             case PerkType.GraveCardBonus:
-                return "무덤 카드 보너스";
+                return "파묘";
             case PerkType.StraightBoost:
-                return "스트레이트 강화";
+                return "연속의 달인";
             default:
                 return perk.ToString();
         }
@@ -44,15 +44,15 @@ public static class PerkCatalog
         switch (perk)
         {
             case PerkType.TripleCostBoost:
-                return "트리플/포카드 점수의 코스트 계수를 0.1에서 0.5로 높입니다.";
+                return "트리플과 포카드가 추가 점수를 얻습니다.";
             case PerkType.HighScoreBonus:
-                return "트리플과 스트레이트 점수의 합이 100 이상이면 그 점수를 10% 높입니다.";
+                return "상대방보다 빨리 멈출 경우 추가 점수를 얻습니다.";
             case PerkType.EmptySlotBoost:
-                return "트리플과 스트레이트의 빈 슬롯 보너스 계수를 0.8로 적용합니다.";
+                return "빈 슬롯 개수에 따른 추가 점수를 얻습니다.";
             case PerkType.GraveCardBonus:
-                return "이번 결산에서 새로 무덤으로 이동한 카드 1장당 20점을 얻습니다.";
+                return "카드 무덤의 카드가 많을수록 추가 점수를 얻습니다.";
             case PerkType.StraightBoost:
-                return "각 스트레이트 점수에 1.2의 스트레이트 카드 수 제곱 배율을 적용합니다.";
+                return "스트레이트를 강화합니다.";
             default:
                 return string.Empty;
         }

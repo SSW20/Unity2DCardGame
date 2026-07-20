@@ -33,8 +33,26 @@ public class CardDescPanel : MonoBehaviour
         if (card == null || rectTransform == null || canvasGroup == null) return;
 
         Debug.Log($"Show called: {card.cardName}");
-        if (nameText != null) nameText.text = card.cardName;
-        if (descText != null) descText.text = card.cardDescription;
+        if (nameText != null)
+        {
+            nameText.alignment = TextAlignmentOptions.Top;
+            nameText.text = card.cardName;
+
+            if (descText != null)
+            {
+                descText.alignment = TextAlignmentOptions.Top;
+                descText.text = card.cardDescription;
+            }
+        }
+        else if (descText != null)
+        {
+            // 현재 씬은 이름 전용 TMP가 없으므로 하나의 텍스트 안에서
+            // 이름과 설명을 위에서부터 가운데 정렬로 표시한다.
+            descText.alignment = TextAlignmentOptions.Top;
+            descText.text =
+                $"<align=center><size=115%><nobr><b>{card.cardName}</b></nobr></size></align>\n\n" +
+                $"<align=center>{card.cardDescription}</align>";
+        }
 
         PositionNextTo(card.transform as RectTransform);
         canvasGroup.alpha = 1f;
