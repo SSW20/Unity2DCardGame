@@ -101,33 +101,57 @@ public class GameInputManager : MonoBehaviour
         lastFieldCount = fieldCount;
         lastGraveCount = graveCount;
 
-        List<PokerCardData> pool = new List<PokerCardData>();
-        pool.AddRange(cardManager.fieldList);
-        pool.AddRange(cardManager.graveList);
-
-        // 무덤 카드 특전의 미리보기 계산에는
-        // 기존 무덤이 아니라 현재 필드에 놓인 카드만 사용한다.
-        List<PokerCardData> previewFieldCards =
-            new List<PokerCardData>(cardManager.fieldList);
-
         int emptySlots = GetEmptyPlayerSlots();
+        List<PokerCardData> currentPool = new List<PokerCardData>();
+        currentPool.AddRange(cardManager.fieldList);
+        currentPool.AddRange(cardManager.graveList);
+
+        SettlementResult currentResult = ScoreEvaluator.EvaluateAll(currentPool);
+        currentResult.newGraveCardCount =
+            ScoreEvaluator.CountUnusedFieldCards(
+                cardManager.fieldList,
+                currentResult.usedCards);
+
+        int currentScore = Mathf.RoundToInt(
+            cardManager.CalculateScore(currentResult, emptySlots));
 
         if (hovered != null && hovered.cardType == CardType.Hand)
         {
-            pool.Add(hovered.pokerCardData);
+            List<PokerCardData> previewPool = new List<PokerCardData>(currentPool);
+            previewPool.Add(hovered.pokerCardData);
+
+            // 무덤 카드 특전의 미리보기 계산에는 기존 무덤이 아니라
+            // 현재 필드에서 묻히게 될 카드만 사용한다.
+            List<PokerCardData> previewFieldCards =
+                new List<PokerCardData>(cardManager.fieldList);
             previewFieldCards.Add(hovered.pokerCardData);
-            emptySlots = Mathf.Max(0, emptySlots - 1); // 호버 카드가 슬롯 하나 차지한다고 가정
+
+            SettlementResult previewResult = ScoreEvaluator.EvaluateAll(previewPool);
+            previewResult.newGraveCardCount =
+                ScoreEvaluator.CountUnusedFieldCards(
+                    previewFieldCards,
+                    previewResult.usedCards);
+
+            int previewScore = Mathf.RoundToInt(
+                cardManager.CalculateScore(
+                    previewResult,
+                    Mathf.Max(0, emptySlots - 1)));
+            int addedScore = previewScore - currentScore;
+
+            if (addedScore == 0)
+            {
+                valueText.text = currentScore.ToString();
+            }
+            else
+            {
+                valueText.text = addedScore > 0
+                    ? $"{currentScore}\n+ {addedScore}"
+                    : $"{currentScore}\n- {Mathf.Abs(addedScore)}";
+            }
+            return;
         }
 
-        SettlementResult result = ScoreEvaluator.EvaluateAll(pool);
-        result.newGraveCardCount =
-            ScoreEvaluator.CountUnusedFieldCards(
-                previewFieldCards,
-                result.usedCards);
-
-        float score = cardManager.CalculateScore(result, emptySlots);
-
-        valueText.text = Mathf.RoundToInt(score).ToString();
+        valueText.text = currentScore.ToString();
     }
 
     private bool IsPointerOverPlayerGraveyard()

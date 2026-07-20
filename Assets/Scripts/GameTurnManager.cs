@@ -237,6 +237,8 @@ public class GameTurnManager : MonoBehaviour
         currentPhase = GamePhase.Stop;
         UpdatePhaseUI();
 
+        ResetDealerExpression();
+
         float duration = aiStopped ? fastTurnBannerDuration : turnBannerDuration;
         yield return ShowTurnBanner("플레이어 턴", duration);
 
@@ -263,8 +265,6 @@ public class GameTurnManager : MonoBehaviour
     {
         currentPhase = GamePhase.Stop;
         UpdatePhaseUI();
-
-        ResetDealerExpression();
 
         bool fastMode = playerStopped;
         float duration = fastMode ? fastTurnBannerDuration : turnBannerDuration;
