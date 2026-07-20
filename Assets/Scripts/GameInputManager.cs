@@ -26,6 +26,8 @@ public class GameInputManager : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI playerScoreText;
     [SerializeField] private TextMeshProUGUI scoreText;
+    [SerializeField] private TextMeshProUGUI scoreDeltaSignText;
+    [SerializeField] private TextMeshProUGUI scoreDeltaValueText;
 
     [Header("Graveyard Viewer")]
     [SerializeField, Range(0f, 1f)] private float graveyardOverlayOpacity = 0.9f;
@@ -259,18 +261,46 @@ public class GameInputManager : MonoBehaviour
 
             if (addedScore == 0)
             {
-                valueText.text = currentScore.ToString();
+                SetScorePreviewDisplay(valueText, currentScore, 0);
             }
             else
             {
-                valueText.text = addedScore > 0
-                    ? $"{currentScore}\n+ {addedScore}"
-                    : $"{currentScore}\n- {Mathf.Abs(addedScore)}";
+                SetScorePreviewDisplay(valueText, currentScore, addedScore);
             }
             return;
         }
 
+        SetScorePreviewDisplay(valueText, currentScore, 0);
+    }
+
+    private void SetScorePreviewDisplay(
+        TextMeshProUGUI valueText,
+        int currentScore,
+        int addedScore)
+    {
         valueText.text = currentScore.ToString();
+
+        bool showDelta = addedScore != 0
+            && scoreDeltaSignText != null
+            && scoreDeltaValueText != null;
+
+        if (scoreDeltaSignText != null)
+            scoreDeltaSignText.gameObject.SetActive(showDelta);
+        if (scoreDeltaValueText != null)
+            scoreDeltaValueText.gameObject.SetActive(showDelta);
+
+        if (!showDelta)
+            return;
+
+        scoreDeltaSignText.text = addedScore > 0 ? "+" : "-";
+        scoreDeltaValueText.text = Mathf.Abs(addedScore).ToString();
+        scoreDeltaValueText.ForceMeshUpdate();
+
+        RectTransform signRect = scoreDeltaSignText.rectTransform;
+        float valueHalfWidth = scoreDeltaValueText.GetRenderedValues(false).x * 0.5f;
+        signRect.anchoredPosition = new Vector2(
+            -(valueHalfWidth + 12f),
+            signRect.anchoredPosition.y);
     }
 
     private bool IsPointerOverPlayerGraveyard()
@@ -884,7 +914,7 @@ public class GameInputManager : MonoBehaviour
         TextMeshProUGUI valueText = ResolveScoreText();
         if (valueText != null)
         {
-            valueText.text = Mathf.RoundToInt(score).ToString();
+            SetScorePreviewDisplay(valueText, Mathf.RoundToInt(score), 0);
         }
 
         // 게임 종료 처리
