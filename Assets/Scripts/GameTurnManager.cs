@@ -65,6 +65,7 @@ public class GameTurnManager : MonoBehaviour
 
     [Header("Dealer Expression")]
     [SerializeField] private Image dealerImage;
+    [SerializeField] private TMP_Text dealerStoppedText;
     [SerializeField] private Sprite dealerDefaultSprite;
     [SerializeField] private Sprite dealerSmileSprite;
     [SerializeField] private Sprite dealerAnnoyedSprite;
@@ -106,6 +107,8 @@ public class GameTurnManager : MonoBehaviour
     {
         FindGameOverPanelIfNeeded();
         SetupButtons();
+
+        SetDealerStoppedVisible(false);
 
         if (turnBannerObject != null)
             turnBannerObject.SetActive(false);
@@ -158,6 +161,7 @@ public class GameTurnManager : MonoBehaviour
     {
         playerStopped = false;
         aiStopped = false;
+        SetDealerStoppedVisible(false);
 
         currentRound++;
 
@@ -436,7 +440,10 @@ public class GameTurnManager : MonoBehaviour
         if (currentPhase != GamePhase.AITurn) return;
 
         if (aiChoseStop)
+        {
             aiStopped = true;
+            SetDealerStoppedVisible(true);
+        }
 
         currentTurn = TurnOwner.AI;
         GoToNextTurn();
@@ -473,6 +480,7 @@ public class GameTurnManager : MonoBehaviour
 
     private IEnumerator StartSettlementPhaseRoutine()
     {
+        SetDealerStoppedVisible(false);
         currentPhase = GamePhase.Stop;
         UpdatePhaseUI();
 
@@ -768,6 +776,12 @@ public class GameTurnManager : MonoBehaviour
             phaseText.text = currentPhase.ToString();
 
         UpdatePlayerActionButtons();
+    }
+
+    private void SetDealerStoppedVisible(bool visible)
+    {
+        if (dealerStoppedText != null)
+            dealerStoppedText.gameObject.SetActive(visible);
     }
 
     public void SetPlayerActionButtonsBlocked(bool blocked)
