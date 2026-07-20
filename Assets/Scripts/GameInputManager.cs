@@ -40,6 +40,15 @@ public class GameInputManager : MonoBehaviour
     [SerializeField] private float scoreInfoTitleFontSize = 44f;
     [SerializeField] private float scoreInfoBodyFontSize = 26f;
 
+    [Header("Joker Deck Intro")]
+    [SerializeField] private Vector2 jokerIntroCardSize = new Vector2(140f, 200f);
+    [SerializeField] private float jokerIntroCardSpacing = 30f;
+    [SerializeField] private float jokerIntroAppearDuration = 0.25f;
+    [SerializeField] private float jokerIntroAppearInterval = 0.1f;
+    [SerializeField] private float jokerIntroHoldDuration = 0.6f;
+    [SerializeField] private float jokerIntroMoveToDeckDuration = 0.45f;
+    [SerializeField] private float jokerIntroMoveInterval = 0.08f;
+
     private bool isPlayerTurn = false;
     private Coroutine drawCardsCoroutine;
     private bool scoreTextWarningShown;
@@ -49,6 +58,113 @@ public class GameInputManager : MonoBehaviour
     private int lastGraveCount = -1;
     private GameObject graveyardOverlay;
     private GameObject scoreInfoOverlay;
+
+    public IEnumerator PlayJokerDeckIntro()
+    {
+        if (cardManager == null
+            || !cardManager.IncludesJokersInDeck
+            || cardManager.JokerCount <= 0
+            || cardPrefab == null
+            || deckPanel == null)
+        {
+            yield break;
+        }
+
+        Canvas canvas = handPanel != null
+            ? handPanel.GetComponentInParent<Canvas>()
+            : GetComponentInParent<Canvas>();
+        Transform introParent = canvas != null ? canvas.transform : transform;
+
+        GameObject introRoot = new GameObject(
+            "Joker Deck Intro",
+            typeof(RectTransform),
+            typeof(CanvasGroup));
+        introRoot.layer = gameObject.layer;
+        introRoot.transform.SetParent(introParent, false);
+        introRoot.transform.SetAsLastSibling();
+
+        RectTransform rootRect = introRoot.GetComponent<RectTransform>();
+        rootRect.anchorMin = Vector2.zero;
+        rootRect.anchorMax = Vector2.one;
+        rootRect.offsetMin = Vector2.zero;
+        rootRect.offsetMax = Vector2.zero;
+
+        CanvasGroup rootGroup = introRoot.GetComponent<CanvasGroup>();
+        rootGroup.interactable = false;
+        rootGroup.blocksRaycasts = false;
+
+        List<GameObject> introCards = new List<GameObject>();
+        int cardCount = cardManager.JokerCount;
+        float cardStep = jokerIntroCardSize.x + jokerIntroCardSpacing;
+        float firstX = -cardStep * (cardCount - 1) * 0.5f;
+
+        for (int i = 0; i < cardCount; i++)
+        {
+            GameObject card = Instantiate(cardPrefab, introRoot.transform);
+            card.name = $"Joker Intro Card {i + 1}";
+
+            RectTransform cardRect = card.GetComponent<RectTransform>();
+            if (cardRect != null)
+            {
+                cardRect.anchorMin = new Vector2(0.5f, 0.5f);
+                cardRect.anchorMax = new Vector2(0.5f, 0.5f);
+                cardRect.pivot = new Vector2(0.5f, 0.5f);
+                cardRect.sizeDelta = jokerIntroCardSize;
+                cardRect.anchoredPosition = new Vector2(firstX + cardStep * i, 0f);
+                cardRect.localRotation = Quaternion.identity;
+                cardRect.localScale = Vector3.zero;
+            }
+
+            CardUI cardUI = card.GetComponent<CardUI>();
+            if (cardUI != null)
+            {
+                cardUI.useAnimation = false;
+                cardUI.cardType = CardType.Deck;
+
+                if (cardManager.JokerSprite != null)
+                {
+                    cardUI.SetPokerData(PokerCardData.CreateJoker(cardManager.JokerSprite));
+                    cardUI.FlipCard(true);
+                }
+                else
+                {
+                    cardUI.FlipCard(false);
+                }
+            }
+
+            CardDragManager dragManager = card.GetComponent<CardDragManager>();
+            if (dragManager != null)
+            {
+                dragManager.enabled = false;
+                Destroy(dragManager);
+            }
+
+            introCards.Add(card);
+            card.transform
+                .DOScale(Vector3.one, Mathf.Max(0.01f, jokerIntroAppearDuration))
+                .SetEase(Ease.OutBack);
+
+            yield return new WaitForSeconds(Mathf.Max(0f, jokerIntroAppearInterval));
+        }
+
+        yield return new WaitForSeconds(Mathf.Max(0f, jokerIntroHoldDuration));
+
+        foreach (GameObject card in introCards)
+        {
+            if (card == null)
+                continue;
+
+            float duration = Mathf.Max(0.01f, jokerIntroMoveToDeckDuration);
+            Sequence moveSequence = DOTween.Sequence();
+            moveSequence.Join(card.transform.DOMove(deckPanel.position, duration).SetEase(Ease.InCubic));
+            moveSequence.Join(card.transform.DOScale(Vector3.zero, duration).SetEase(Ease.InBack));
+
+            yield return new WaitForSeconds(Mathf.Max(0f, jokerIntroMoveInterval));
+        }
+
+        yield return new WaitForSeconds(Mathf.Max(0.01f, jokerIntroMoveToDeckDuration));
+        Destroy(introRoot);
+    }
 
     void Start()
     {

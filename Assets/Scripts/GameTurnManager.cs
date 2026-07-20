@@ -93,6 +93,7 @@ public class GameTurnManager : MonoBehaviour
     private int currentRound = 0;
     private Text readableTurnBannerText;
     private Coroutine dealerExpressionCoroutine;
+    private bool jokerDeckIntroPlayed;
 
     public int CurrentRound => currentRound;
 
@@ -130,6 +131,7 @@ public class GameTurnManager : MonoBehaviour
         playerTotalScore = 0;
         aiTotalScore = 0;
         currentRound = 0;
+        jokerDeckIntroPlayed = false;
 
         // 특전 목록은 BeginGameSetup()에서 한 번만 초기화한다.
         UpdateScoreUI();
@@ -216,6 +218,22 @@ public class GameTurnManager : MonoBehaviour
     private void StartPlayerTurnAfterPerkSelection()
     {
         UpdatePerkDebugUI();
+
+        if (currentRound == 1 && !jokerDeckIntroPlayed && gameInputManager != null)
+        {
+            jokerDeckIntroPlayed = true;
+            currentPhase = GamePhase.Stop;
+            UpdatePhaseUI();
+            StartCoroutine(PlayJokerDeckIntroThenStartPlayerTurn());
+            return;
+        }
+
+        StartPlayerTurn();
+    }
+
+    private IEnumerator PlayJokerDeckIntroThenStartPlayerTurn()
+    {
+        yield return gameInputManager.PlayJokerDeckIntro();
         StartPlayerTurn();
     }
 

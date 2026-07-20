@@ -80,6 +80,8 @@ public class CardManager : MonoBehaviour
     public CardImageData cardImageData;
 
     public Sprite JokerSprite => jokerSprite;
+    public bool IncludesJokersInDeck => includeJokersInDeck;
+    public int JokerCount => jokerCount;
 
     void Awake()
     {
