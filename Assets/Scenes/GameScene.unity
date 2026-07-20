@@ -4658,7 +4658,7 @@ MonoBehaviour:
   growTargetScale: 2
   impactPunchStrength: 2
   impactDuration: 1
-  pushDuration: 1
+  pushDuration: 3
   winnerAdvanceRatio: 0.7
   loserKnockbackMultiplier: 2
   hitReactionScale: 1.4
@@ -6667,7 +6667,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   canvasGroup: {fileID: 1792747256}
-  fadeSpeed: 0.2
+  fadeSpeed: 1
   flipDuration: 0.2
   moveDuration: 0.45
 --- !u!1 &1794740810
