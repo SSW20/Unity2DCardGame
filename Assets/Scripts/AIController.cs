@@ -149,6 +149,7 @@ public class AIController : MonoBehaviour
             rt.localRotation = Quaternion.identity;
 
             slot.SetCard(cardObj);
+            CardSoundController.PlayPlace();
             aiCardManager.MoveCard(
                 card,
                 aiCardManager.playerHand,
@@ -212,10 +213,12 @@ public class AIController : MonoBehaviour
     {
         List<GameObject> toDiscard = new List<GameObject>(aiHandObjects);
         aiHandObjects.Clear();
+        CardSoundController.ResetTransferBurst();
 
         foreach (var obj in toDiscard)
         {
             if (obj == null) continue;
+            CardSoundController.PlayCardTransfer();
             CardUI cardUI = obj.GetComponent<CardUI>();
             if (cardUI != null) cardUI.useAnimation = false;
 
@@ -254,6 +257,7 @@ public class AIController : MonoBehaviour
         cardObj.transform.localScale = Vector3.one;
 
         aiHandObjects.Add(cardObj);
+        CardSoundController.PlayDraw();
 
         // 손패 부채꼴 위치로 이동
         UpdateHandLayout();

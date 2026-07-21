@@ -145,12 +145,14 @@ public class GameInputManager : MonoBehaviour
             card.transform
                 .DOScale(Vector3.one, Mathf.Max(0.01f, jokerIntroAppearDuration))
                 .SetEase(Ease.OutBack);
+            CardSoundController.PlayJokerAppear();
 
             yield return new WaitForSeconds(Mathf.Max(0f, jokerIntroAppearInterval));
         }
 
         yield return new WaitForSeconds(Mathf.Max(0f, jokerIntroHoldDuration));
 
+        CardSoundController.ResetTransferBurst();
         foreach (GameObject card in introCards)
         {
             if (card == null)
@@ -160,6 +162,7 @@ public class GameInputManager : MonoBehaviour
             Sequence moveSequence = DOTween.Sequence();
             moveSequence.Join(card.transform.DOMove(deckPanel.position, duration).SetEase(Ease.InCubic));
             moveSequence.Join(card.transform.DOScale(Vector3.zero, duration).SetEase(Ease.InBack));
+            CardSoundController.PlayJokerToDeck();
 
             yield return new WaitForSeconds(Mathf.Max(0f, jokerIntroMoveInterval));
         }
@@ -773,6 +776,7 @@ public class GameInputManager : MonoBehaviour
         newCard.transform.localPosition = handPanel.InverseTransformPoint(deckPanel.position);
         newCard.transform.localScale = Vector3.one;
 
+        CardSoundController.PlayDraw();
         handLayoutManager.UpdateLayout();
     }
 
@@ -865,6 +869,8 @@ public class GameInputManager : MonoBehaviour
 
         selectedCardUI.SetHover(false);
         selectedCardUI.useAnimation = false;
+        CardSoundController.ResetTransferBurst();
+        CardSoundController.PlayCardTransfer();
 
         CardDragManager dragManager = selectedCardObject.GetComponent<CardDragManager>();
         if (dragManager != null)
@@ -882,9 +888,11 @@ public class GameInputManager : MonoBehaviour
 
     private void RemoveCardFromHand()
     {
+        CardSoundController.ResetTransferBurst();
         foreach (Transform child in handPanel)
         {
             GameObject card = child.gameObject;
+            CardSoundController.PlayCardTransfer();
 
             CardUI cardUI = card.GetComponent<CardUI>();
             if (cardUI != null)
@@ -921,6 +929,7 @@ public class GameInputManager : MonoBehaviour
         RemoveCardFromHand();
         cardManager.RemoveCardAll(cardManager.pokerDeck);
 
+        CardSoundController.ResetTransferBurst();
         foreach (Transform slotTransform in fieldSlotContainer)
         {
             CardSlot slot = slotTransform.GetComponent<CardSlot>();
@@ -941,6 +950,7 @@ public class GameInputManager : MonoBehaviour
 
     private void AnimateAndDestroy(GameObject card, Vector3 targetPos)
     {
+        CardSoundController.PlayCardTransfer();
         Sequence seq = DOTween.Sequence();
         seq.Append(card.transform.DOMove(targetPos, 0.3f));
         seq.Join(card.transform.DOScale(Vector3.zero, 0.3f));

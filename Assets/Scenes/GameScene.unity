@@ -205,8 +205,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
@@ -6864,6 +6864,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1896592140}
   - component: {fileID: 1896592139}
+  - component: {fileID: 2200000040}
   m_Layer: 0
   m_Name: InputManager
   m_TagString: Untagged
@@ -6913,6 +6914,59 @@ MonoBehaviour:
   jokerIntroHoldDuration: 0.6
   jokerIntroMoveToDeckDuration: 0.45
   jokerIntroMoveInterval: 0.08
+--- !u!114 &2200000040
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1896592138}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71ed3d17c24e48e496ed2b0c98b2b21c, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  hoverClips:
+  - {fileID: 8300000, guid: efcfa1e62d4f6b242b0622c2d11f4140, type: 3}
+  - {fileID: 8300000, guid: ff2444774e7035542862735ea0e24dab, type: 3}
+  - {fileID: 8300000, guid: a987fe110f7feaa4596685fe5b8dbd66, type: 3}
+  - {fileID: 8300000, guid: 0a7eadc99b37214448c7d73a11f8cdd1, type: 3}
+  hoverVolume: 0.06
+  hoverMinInterval: 0.06
+  drawClips:
+  - {fileID: 8300000, guid: 4e2de1e80586e3b4bb253f8853e1559e, type: 3}
+  - {fileID: 8300000, guid: 558f53a4852115a4ca6aa3dee4a385a8, type: 3}
+  drawVolume: 0.35
+  drawStartOffset: 0.08
+  placeClips:
+  - {fileID: 8300000, guid: b5cd957f814207d4788d675bd7ef9d94, type: 3}
+  - {fileID: 8300000, guid: 783d4d17eaeaee54baf7c78c06e2c5cd, type: 3}
+  - {fileID: 8300000, guid: 83da2c91e3b31204f967a04fec143e06, type: 3}
+  - {fileID: 8300000, guid: 0ed8b2671634bc9479839cd54e7353fc, type: 3}
+  placeVolume: 0.45
+  transferClips:
+  - {fileID: 8300000, guid: 4e2de1e80586e3b4bb253f8853e1559e, type: 3}
+  - {fileID: 8300000, guid: 558f53a4852115a4ca6aa3dee4a385a8, type: 3}
+  transferVolume: 0.3
+  transferStartOffset: 0.08
+  maxTransferSoundsPerBurst: 2
+  transferBurstWindow: 0.5
+  jokerAppearClips:
+  - {fileID: 8300000, guid: 82e41c2a2e947f648951a5ac1ba3533b, type: 3}
+  - {fileID: 8300000, guid: 359b889812a750d4794e7c6f2c828713, type: 3}
+  - {fileID: 8300000, guid: 7d18a6e4b203ff34b8acb07a9c73492f, type: 3}
+  - {fileID: 8300000, guid: bcca7dab51df99a43b983619152543b7, type: 3}
+  - {fileID: 8300000, guid: 08ed69310813d16419971e5f0dd1ce04, type: 3}
+  jokerAppearVolume: 0.45
+  jokerToDeckClips:
+  - {fileID: 8300000, guid: 4e2de1e80586e3b4bb253f8853e1559e, type: 3}
+  - {fileID: 8300000, guid: 558f53a4852115a4ca6aa3dee4a385a8, type: 3}
+  jokerToDeckVolume: 0.35
+  jokerToDeckStartOffset: 0.08
+  uiHoverClip: {fileID: 8300000, guid: ff2444774e7035542862735ea0e24dab, type: 3}
+  uiHoverVolume: 0.04
+  uiClickClip: {fileID: 8300000, guid: 7d18a6e4b203ff34b8acb07a9c73492f, type: 3}
+  uiClickVolume: 0.12
 --- !u!4 &1896592140
 Transform:
   m_ObjectHideFlags: 0

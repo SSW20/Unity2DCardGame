@@ -87,7 +87,10 @@ public class CardHoverManager : MonoBehaviour
         currentHovered = nearest;
 
         if (currentHovered != null)
+        {
             currentHovered.SetHover(true);
+            CardSoundController.PlayHover();
+        }
 
         if (descriptionPanel != null && currentHovered != null && currentHovered.cardType == CardType.Special)
             descriptionPanel.Show(currentHovered);

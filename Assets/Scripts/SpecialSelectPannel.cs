@@ -159,6 +159,7 @@ public class SpecialSelectPanel : MonoBehaviour
         }
 
         isSelecting = true;
+        CardSoundController.PlayUIClick();
         StartCoroutine(SelectRoutine(selected, emptySlot, selectedPerk));
     }
 

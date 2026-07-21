@@ -109,6 +109,7 @@ public class CardDragManager : MonoBehaviour,
             rectTransform.localRotation = Quaternion.identity;
             rectTransform.localScale = Vector3.one;
             targetSlot.SetCard(gameObject);
+            CardSoundController.PlayPlace();
 
             if (cardUI != null && cardManager != null)
                 cardManager.MoveCard(

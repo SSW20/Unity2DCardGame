@@ -501,6 +501,8 @@ public class GameTurnManager : MonoBehaviour
         Debug.Log($"Player Round Score: {playerRoundScore}");
         Debug.Log($"AI Round Score: {aiRoundScore}");
 
+        CardSoundController.ResetTransferBurst();
+        CardSoundController.PlayCardTransfer();
         ClearFieldVisuals(SlotOwner.Player);
         ClearFieldVisuals(SlotOwner.Enemy);
 
