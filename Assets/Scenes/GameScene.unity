@@ -742,6 +742,20 @@ MonoBehaviour:
   jokerCount: 5
   jokerSprite: {fileID: 0}
   ownedPerks: 
+  compressedSlotPointsPerEmptySlot: 10
+  graveRobbingPointsPerCard: 10
+  collectorTripleCostCorrection: 10
+  collectorTripleMultiplier: 4
+  collectorFourCostCorrection: 20
+  collectorFourMultiplier: 8
+  offensiveStopBonus: 100
+  straightMasterLowAverageMax: 6
+  straightMasterHighAverageMin: 7
+  straightMasterFourMultiplier: 4
+  straightMasterFiveMultiplier: 5
+  straightMasterSixMultiplier: 6
+  straightMasterSevenPlusMultiplier: 8
+  straightMasterHighCostCorrection: 20
   pokerDeck: []
   playerHand: []
   fieldList: []
@@ -2636,7 +2650,7 @@ MonoBehaviour:
   aiCardManager: {fileID: 1287922615}
   specialSelectPanel: {fileID: 1957350225}
   gameOverPannel: {fileID: 0}
-  targetScore: 500
+  targetScore: 1000
   playerTotalScoreText: {fileID: 0}
   aiTotalScoreText: {fileID: 0}
   phaseText: {fileID: 0}
@@ -2647,6 +2661,7 @@ MonoBehaviour:
   stopButton: {fileID: 1093045712}
   turnEndButton: {fileID: 531786067}
   jokerForcedStopMessageDuration: 1.5
+  fieldFullForcedStopMessageDuration: 1.5
   turnBannerObject: {fileID: 1909341937}
   turnBannerImage: {fileID: 1909341939}
   turnBannerText: {fileID: 1518031431}
@@ -4418,6 +4433,20 @@ MonoBehaviour:
   jokerCount: 5
   jokerSprite: {fileID: 0}
   ownedPerks: 
+  compressedSlotPointsPerEmptySlot: 50
+  graveRobbingPointsPerCard: 20
+  collectorTripleCostCorrection: 10
+  collectorTripleMultiplier: 4
+  collectorFourCostCorrection: 20
+  collectorFourMultiplier: 8
+  offensiveStopBonus: 100
+  straightMasterLowAverageMax: 6
+  straightMasterHighAverageMin: 7
+  straightMasterFourMultiplier: 4
+  straightMasterFiveMultiplier: 5
+  straightMasterSixMultiplier: 6
+  straightMasterSevenPlusMultiplier: 8
+  straightMasterHighCostCorrection: 20
   pokerDeck: []
   playerHand: []
   fieldList: []

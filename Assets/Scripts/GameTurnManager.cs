@@ -88,6 +88,10 @@ public class GameTurnManager : MonoBehaviour
     private bool aiStopped = false;
     private bool playerActionButtonsBlocked;
 
+    // 공세 특전 판정을 위해 이번 라운드에서 누가 먼저 STOP했는지 기록한다.
+    private bool hasFirstStopOwner = false;
+    private TurnOwner firstStopOwner;
+
     private int playerTotalScore = 0;
     private int aiTotalScore = 0;
     private int currentRound = 0;
@@ -156,6 +160,7 @@ public class GameTurnManager : MonoBehaviour
     {
         playerStopped = false;
         aiStopped = false;
+        hasFirstStopOwner = false;
 
         currentRound++;
 
@@ -198,7 +203,8 @@ public class GameTurnManager : MonoBehaviour
             _ =>
             {
                 StartPlayerTurnAfterPerkSelection();
-            });
+            },
+            playerCardManager.GetPerkDescription);
 
         if (!shown)
             StartPlayerTurnAfterPerkSelection();
@@ -341,6 +347,7 @@ public class GameTurnManager : MonoBehaviour
     private IEnumerator ForcePlayerStopBecauseOfJoker()
     {
         currentPhase = GamePhase.Stop;
+        RecordFirstStop(TurnOwner.Player);
         playerStopped = true;
         UpdatePhaseUI();
 
@@ -382,6 +389,7 @@ public class GameTurnManager : MonoBehaviour
         // 코루틴은 첫 yield 전까지 즉시 실행되므로,
         // 중복 호출이 들어와도 이후 호출은 PlayerTurn 조건을 통과하지 못합니다.
         currentPhase = GamePhase.Stop;
+        RecordFirstStop(TurnOwner.Player);
         playerStopped = true;
         UpdatePhaseUI();
 
@@ -401,6 +409,7 @@ public class GameTurnManager : MonoBehaviour
     {
         if (currentPhase != GamePhase.PlayerTurn || playerActionButtonsBlocked) return;
 
+        RecordFirstStop(TurnOwner.Player);
         playerStopped = true;
 
         gameInputManager.CleanupPlayerHandAfterTurn();
@@ -414,10 +423,23 @@ public class GameTurnManager : MonoBehaviour
         if (currentPhase != GamePhase.AITurn) return;
 
         if (aiChoseStop)
+        {
+            RecordFirstStop(TurnOwner.AI);
             aiStopped = true;
+        }
 
         currentTurn = TurnOwner.AI;
         GoToNextTurn();
+    }
+
+    private void RecordFirstStop(TurnOwner owner)
+    {
+        if (hasFirstStopOwner)
+            return;
+
+        hasFirstStopOwner = true;
+        firstStopOwner = owner;
+        Debug.Log($"[STOP ORDER] First: {owner}");
     }
 
     private void GoToNextTurn()
@@ -465,8 +487,19 @@ public class GameTurnManager : MonoBehaviour
         SettlementResult playerResult = playerCardManager.Settle();
         SettlementResult aiResult = aiCardManager.Settle();
 
-        float playerRoundScore = playerCardManager.CalculateScore(playerResult, playerEmptySlots);
-        float aiRoundScore = aiCardManager.CalculateScore(aiResult, aiEmptySlots);
+        bool playerStoppedBeforeOpponent =
+            hasFirstStopOwner && firstStopOwner == TurnOwner.Player;
+        bool aiStoppedBeforeOpponent =
+            hasFirstStopOwner && firstStopOwner == TurnOwner.AI;
+
+        float playerRoundScore = playerCardManager.CalculateScore(
+            playerResult,
+            playerEmptySlots,
+            playerStoppedBeforeOpponent);
+        float aiRoundScore = aiCardManager.CalculateScore(
+            aiResult,
+            aiEmptySlots,
+            aiStoppedBeforeOpponent);
 
         Debug.Log($"Player Round Score: {playerRoundScore}");
         Debug.Log($"AI Round Score: {aiRoundScore}");

@@ -2,38 +2,63 @@ using System.Collections.Generic;
 
 public enum PerkType
 {
-    TripleCostBoost,   // 트리플/포카드의 costTrp 계수를 0.1에서 0.5로 강화
-    HighScoreBonus,    // 트리플 + 스트레이트 점수가 100 이상이면 10% 증가
-    EmptySlotBoost,    // 빈 슬롯 보너스 계수를 0.8로 강화
-    GraveCardBonus,    // 이번 결산에서 새로 무덤으로 간 카드 1장당 20점
-    StraightBoost      // 스트레이트 카드 수만큼 1.2의 거듭제곱 배율 적용
+    // 기존 enum 순서를 유지해 Unity 직렬화 값이 갑자기 뒤바뀌지 않도록 번호를 고정한다.
+    CompressedSlots = 0,      // 실전압축 슬롯
+    GraveRobbing = 1,        // 파묘
+    SameNumberCollector = 2, // 같은 숫자 수집가
+    Offensive = 3,           // 공세
+    StraightMaster = 4       // 연속의 달인
 }
 
 public static class PerkCatalog
 {
     public static readonly PerkType[] All =
     {
-        PerkType.TripleCostBoost,
-        PerkType.HighScoreBonus,
-        PerkType.EmptySlotBoost,
-        PerkType.GraveCardBonus,
-        PerkType.StraightBoost
+        PerkType.CompressedSlots,
+        PerkType.GraveRobbing,
+        PerkType.SameNumberCollector,
+        PerkType.Offensive,
+        PerkType.StraightMaster
     };
+
+    public static string GetShortDescription(PerkType perk)
+    {
+        switch (perk)
+        {
+            case PerkType.CompressedSlots:
+                return "빈 슬롯이 많을수록 추가 점수를 얻습니다.";
+
+            case PerkType.GraveRobbing:
+                return "무덤의 카드 수에 따라 추가 점수를 얻습니다.";
+
+            case PerkType.SameNumberCollector:
+                return "트리플과 포카드 점수를 강화합니다.";
+
+            case PerkType.Offensive:
+                return "상대보다 먼저 멈추면 추가 점수를 얻습니다.";
+
+            case PerkType.StraightMaster:
+                return "스트레이트 점수를 강화합니다.";
+
+            default:
+                return string.Empty;
+        }
+    }
 
     public static string GetName(PerkType perk)
     {
         switch (perk)
         {
-            case PerkType.TripleCostBoost:
-                return "트리플 코스트 강화";
-            case PerkType.HighScoreBonus:
-                return "고득점 보너스";
-            case PerkType.EmptySlotBoost:
-                return "빈 슬롯 보너스 강화";
-            case PerkType.GraveCardBonus:
-                return "무덤 카드 보너스";
-            case PerkType.StraightBoost:
-                return "스트레이트 강화";
+            case PerkType.CompressedSlots:
+                return "실전압축 슬롯";
+            case PerkType.GraveRobbing:
+                return "파묘";
+            case PerkType.SameNumberCollector:
+                return "같은 숫자 수집가";
+            case PerkType.Offensive:
+                return "공세";
+            case PerkType.StraightMaster:
+                return "연속의 달인";
             default:
                 return perk.ToString();
         }
@@ -43,16 +68,21 @@ public static class PerkCatalog
     {
         switch (perk)
         {
-            case PerkType.TripleCostBoost:
-                return "트리플/포카드 점수의 코스트 계수를 0.1에서 0.5로 높입니다.";
-            case PerkType.HighScoreBonus:
-                return "트리플과 스트레이트 점수의 합이 100 이상이면 그 점수를 10% 높입니다.";
-            case PerkType.EmptySlotBoost:
-                return "트리플과 스트레이트의 빈 슬롯 보너스 계수를 0.8로 적용합니다.";
-            case PerkType.GraveCardBonus:
-                return "이번 결산에서 새로 무덤으로 이동한 카드 1장당 20점을 얻습니다.";
-            case PerkType.StraightBoost:
-                return "각 스트레이트 점수에 1.2의 스트레이트 카드 수 제곱 배율을 적용합니다.";
+            case PerkType.CompressedSlots:
+                return "빈 슬롯 1칸당 50점을 추가로 얻습니다.";
+
+            case PerkType.GraveRobbing:
+                return "결산 후 무덤에 남는 카드 1장당 20점을 추가로 얻습니다.";
+
+            case PerkType.SameNumberCollector:
+                return "트리플은 (코스트 합 + 10) × 4, 포카드는 (코스트 합 + 20) × 8로 계산합니다.";
+
+            case PerkType.Offensive:
+                return "상대보다 먼저 STOP 상태에 진입하면 100점을 추가로 얻습니다.";
+
+            case PerkType.StraightMaster:
+                return "스트레이트 평균이 6 이하이면 4·5·6연속 배율을 향상시킵니다. 평균이 7 이상이면 코스트 합에 20을 더합니다.";
+
             default:
                 return string.Empty;
         }

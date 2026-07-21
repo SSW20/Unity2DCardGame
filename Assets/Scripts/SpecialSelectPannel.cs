@@ -39,7 +39,8 @@ public class SpecialSelectPanel : MonoBehaviour
     public bool ShowPerkOptions(
         IReadOnlyList<PerkType> perks,
         Func<PerkType, bool> trySelect,
-        Action<PerkType> selectionCompleted)
+        Action<PerkType> selectionCompleted,
+        Func<PerkType, string> getDescription = null)
     {
         if (perks == null || trySelect == null || !PrepareToShow())
             return false;
@@ -49,9 +50,13 @@ public class SpecialSelectPanel : MonoBehaviour
 
         foreach (PerkType perk in perks)
         {
+            string description = getDescription != null
+                ? getDescription(perk)
+                : PerkCatalog.GetDescription(perk);
+
             CardUI card = CreateCandidateCard(
-                PerkCatalog.GetName(perk),
-                PerkCatalog.GetDescription(perk));
+             PerkCatalog.GetName(perk),
+             PerkCatalog.GetShortDescription(perk));
             if (card != null)
                 perkCandidates[card] = perk;
         }
@@ -70,7 +75,7 @@ public class SpecialSelectPanel : MonoBehaviour
             cardPrefab,
             emptySlot,
             PerkCatalog.GetName(perk),
-            PerkCatalog.GetDescription(perk));
+            PerkCatalog.GetShortDescription(perk));
     }
 
     private bool PrepareToShow()

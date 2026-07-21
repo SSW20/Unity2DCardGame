@@ -436,6 +436,22 @@ public class GameInputManager : MonoBehaviour
 
     private string GetScoreInformationText()
     {
+        string compressedSlots = cardManager != null
+            ? cardManager.GetPerkDescription(PerkType.CompressedSlots)
+            : PerkCatalog.GetDescription(PerkType.CompressedSlots);
+        string graveRobbing = cardManager != null
+            ? cardManager.GetPerkDescription(PerkType.GraveRobbing)
+            : PerkCatalog.GetDescription(PerkType.GraveRobbing);
+        string collector = cardManager != null
+            ? cardManager.GetPerkDescription(PerkType.SameNumberCollector)
+            : PerkCatalog.GetDescription(PerkType.SameNumberCollector);
+        string offensive = cardManager != null
+            ? cardManager.GetPerkDescription(PerkType.Offensive)
+            : PerkCatalog.GetDescription(PerkType.Offensive);
+        string straightMaster = cardManager != null
+            ? cardManager.GetPerkDescription(PerkType.StraightMaster)
+            : PerkCatalog.GetDescription(PerkType.StraightMaster);
+
         return
             "<b>카드 숫자</b>  A=1 / J=11 / Q=12 / K=13\n\n" +
             "<size=115%><b>조합 조건</b></size>\n" +
@@ -449,19 +465,13 @@ public class GameInputManager : MonoBehaviour
             "4연속 ×3 / 5연속 ×4 / 6연속 ×5 / 7연속 이상 ×8\n" +
             "여러 스트레이트가 있으면 각각 계산해서 더합니다.\n\n" +
             "<size=115%><b>특전 상세</b></size>\n" +
-            "1. <b>실전압축 슬롯</b>\n" +
-            "   상세: 점수 + 빈 슬롯 수 × 50점. 빈 슬롯 수만큼 추가 점수를 얻습니다.\n" +
-            "2. <b>파묘</b>\n" +
-            "   상세: 점수 + 무덤 카드 수 × 20점. 무덤의 카드가 많을수록 추가 점수를 얻습니다.\n" +
-            "3. <b>같은 숫자 수집가</b>\n" +
-            "   상세: 포카드 코스트에 +20을 적용하고 포카드 족보 상수는 ×8, 트리플은 ×4로 변경합니다.\n" +
-            "4. <b>공세</b>\n" +
-            "   상세: 상대보다 먼저 STOP 상태에 진입하면 +100점을 얻습니다.\n" +
-            "5. <b>연속의 달인</b>\n" +
-            "   상세: 스트레이트 코스트 평균이 6 이하이면 4/5/6연속 상수를 ×4/×5/×6으로 변경합니다.\n" +
-            "   평균이 7 이상이면 코스트 보정값 +20을 적용하며, 7연속 상수는 변경하지 않습니다.\n\n" +
+            "1. <b>실전압축 슬롯</b>\n   " + compressedSlots + "\n" +
+            "2. <b>파묘</b>\n   " + graveRobbing + "\n" +
+            "3. <b>같은 숫자 수집가</b>\n   " + collector + "\n" +
+            "4. <b>공세</b>\n   " + offensive + "\n" +
+            "5. <b>연속의 달인</b>\n   " + straightMaster + "\n\n" +
             "<b>결산:</b> 조합에 사용된 카드는 덱으로, 사용되지 않은 필드 카드는 무덤으로 이동합니다.\n" +
-            "<b>턴 종료:</b> 남은 손패를 덱으로 되돌리고 다음 턴으로 넘깁니다. 상대가 이미 결산했다면 플레이어 턴을 다시 시작합니다.";
+            "<b>턴 종료:</b> 남은 손패를 덱으로 되돌리고 다음 턴으로 넘깁니다.";
     }
 
     private void HideScoreInformation()

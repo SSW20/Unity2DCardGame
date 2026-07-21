@@ -28,19 +28,19 @@ public class PlayerPerkShortcutController : MonoBehaviour
             return;
 
         if (Pressed(KeyCode.Alpha1, KeyCode.Keypad1))
-            SelectPerk(PerkType.TripleCostBoost);
+            SelectPerk(PerkType.CompressedSlots);
 
         if (Pressed(KeyCode.Alpha2, KeyCode.Keypad2))
-            SelectPerk(PerkType.HighScoreBonus);
+            SelectPerk(PerkType.GraveRobbing);
 
         if (Pressed(KeyCode.Alpha3, KeyCode.Keypad3))
-            SelectPerk(PerkType.EmptySlotBoost);
+            SelectPerk(PerkType.SameNumberCollector);
 
         if (Pressed(KeyCode.Alpha4, KeyCode.Keypad4))
-            SelectPerk(PerkType.GraveCardBonus);
+            SelectPerk(PerkType.Offensive);
 
         if (Pressed(KeyCode.Alpha5, KeyCode.Keypad5))
-            SelectPerk(PerkType.StraightBoost);
+            SelectPerk(PerkType.StraightMaster);
     }
 
     private bool Pressed(KeyCode mainKey, KeyCode keypadKey)
