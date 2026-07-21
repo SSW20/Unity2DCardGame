@@ -742,6 +742,8 @@ MonoBehaviour:
   jokerCount: 5
   jokerSprite: {fileID: 0}
   ownedPerks: 
+  compressedSlotPointsPerEmptySlot: 10
+  graveRobbingPointsPerCard: 10
   pokerDeck: []
   playerHand: []
   fieldList: []
@@ -2420,7 +2422,7 @@ MonoBehaviour:
   aiCardManager: {fileID: 1287922615}
   specialSelectPanel: {fileID: 1957350225}
   gameOverPannel: {fileID: 0}
-  targetScore: 500
+  targetScore: 1000
   playerTotalScoreText: {fileID: 0}
   aiTotalScoreText: {fileID: 0}
   phaseText: {fileID: 0}
@@ -4139,6 +4141,8 @@ MonoBehaviour:
   jokerCount: 5
   jokerSprite: {fileID: 0}
   ownedPerks: 
+  compressedSlotPointsPerEmptySlot: 10
+  graveRobbingPointsPerCard: 10
   pokerDeck: []
   playerHand: []
   fieldList: []

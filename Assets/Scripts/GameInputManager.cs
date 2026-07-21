@@ -627,18 +627,24 @@ public class GameInputManager : MonoBehaviour
             "여러 스트레이트가 있으면 각각 계산해서 더합니다.\n\n" +
             "<size=115%><b>특전 상세</b></size>\n" +
             "1. <b>실전압축 슬롯</b>\n" +
-            "   상세: 점수 + 빈 슬롯 수 × 50점. 빈 슬롯 수만큼 추가 점수를 얻습니다.\n" +
+            "   상세: " + GetLivePerkDescription(PerkType.EmptySlotBoost) + "\n" +
             "2. <b>파묘</b>\n" +
-            "   상세: 점수 + 무덤행 카드 수 × 15점. 무덤행 카드가 많을수록 추가 점수를 얻습니다.\n" +
+            "   상세: " + GetLivePerkDescription(PerkType.GraveCardBonus) + "\n" +
             "3. <b>같은 숫자 수집가</b>\n" +
-            "   상세: 트리플·포카드 코스트 보정값에 +25를 적용합니다.\n" +
+            "   상세: " + GetLivePerkDescription(PerkType.TripleCostBoost) + "\n" +
             "4. <b>공세</b>\n" +
-            "   상세: 상대보다 먼저 STOP 상태에 진입하면 +100점을 얻습니다.\n" +
+            "   상세: " + GetLivePerkDescription(PerkType.HighScoreBonus) + "\n" +
             "5. <b>연속의 달인</b>\n" +
-            "   상세: 스트레이트 코스트 평균이 6 이하이면 4/5/6연속 상수를 ×4/×5/×6으로 변경합니다.\n" +
-            "   평균이 7 이상이면 코스트 보정값 +20을 적용합니다.\n\n" +
+            "   상세: " + GetLivePerkDescription(PerkType.StraightBoost) + "\n\n" +
             "<b>결산:</b> 조합에 사용된 카드는 덱으로, 사용되지 않은 필드 카드는 무덤으로 이동합니다.\n" +
             "<b>턴 종료:</b> 남은 손패를 덱으로 되돌리고 다음 턴으로 넘깁니다. 상대가 이미 결산했다면 플레이어 턴을 다시 시작합니다.";
+    }
+
+    private string GetLivePerkDescription(PerkType perk)
+    {
+        return cardManager != null
+            ? cardManager.GetPerkDescription(perk)
+            : PerkCatalog.GetDescription(perk);
     }
 
     private void HideScoreInformation()

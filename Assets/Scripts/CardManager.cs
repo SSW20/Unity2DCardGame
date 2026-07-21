@@ -63,6 +63,38 @@ public class CardManager : MonoBehaviour
     [Header("특전 시스템")]
     [SerializeField] private List<PerkType> ownedPerks = new List<PerkType>();
 
+    [Header("특전 밸런스 - Inspector에서 수정")]
+    [Tooltip("실전압축 슬롯: 빈 슬롯 1칸당 추가 점수")]
+    [SerializeField, Min(0f)] private float compressedSlotPointsPerEmptySlot = 10f;
+
+    [Tooltip("파묘: 이번 결산에서 무덤으로 간 카드 1장당 추가 점수")]
+    [SerializeField, Min(0f)] private float graveRobbingPointsPerCard = 10f;
+
+    [Tooltip("같은 숫자 수집가: 트리플 코스트 보정값")]
+    [SerializeField] private float collectorTripleCostCorrection = 25f;
+    [Tooltip("같은 숫자 수집가: 트리플 족보 배율")]
+    [SerializeField, Min(0f)] private float collectorTripleMultiplier = 4f;
+    [Tooltip("같은 숫자 수집가: 포카드 코스트 보정값")]
+    [SerializeField] private float collectorFourCostCorrection = 25f;
+    [Tooltip("같은 숫자 수집가: 포카드 족보 배율")]
+    [SerializeField, Min(0f)] private float collectorFourMultiplier = 8f;
+
+    [Tooltip("공세: 상대보다 먼저 STOP했을 때 추가 점수")]
+    [SerializeField, Min(0f)] private float offensiveStopBonus = 100f;
+
+    [Tooltip("연속의 달인: 저코스트 스트레이트로 판정하는 평균 상한")]
+    [SerializeField] private float straightMasterLowAverageMax = 6f;
+    [Tooltip("연속의 달인: 고코스트 스트레이트로 판정하는 평균 하한")]
+    [SerializeField] private float straightMasterHighAverageMin = 7f;
+    [Tooltip("연속의 달인: 평균이 낮을 때 4연속 배율")]
+    [SerializeField, Min(0f)] private float straightMasterFourMultiplier = 4f;
+    [Tooltip("연속의 달인: 평균이 낮을 때 5연속 배율")]
+    [SerializeField, Min(0f)] private float straightMasterFiveMultiplier = 5f;
+    [Tooltip("연속의 달인: 평균이 낮을 때 6연속 배율")]
+    [SerializeField, Min(0f)] private float straightMasterSixMultiplier = 6f;
+    [Tooltip("연속의 달인: 평균이 높을 때 코스트 합에 더하는 보정값")]
+    [SerializeField] private float straightMasterHighCostCorrection = 20f;
+
     public IReadOnlyList<PerkType> OwnedPerks => ownedPerks;
 
     private int playerCurrentCost;
@@ -346,56 +378,111 @@ public class CardManager : MonoBehaviour
         return result;
     }
 
-    public float CalculateScore(SettlementResult result, int emptySlotCount)
+    public float CalculateScore(
+        SettlementResult result,
+        int emptySlotCount,
+        bool stoppedBeforeOpponent = false)
     {
-        float tripleAndStraightScore = 0f;
+        float total = 0f;
+        bool hasCollector = HasPerk(PerkType.TripleCostBoost);
+        bool hasStraightMaster = HasPerk(PerkType.StraightBoost);
 
-        // 보유 특전에 따라 점수식의 계수를 결정한다.
         // ===== 트리플 / 포카드 점수 =====
-        foreach (var triple in result.triples)
-            tripleAndStraightScore += (GetRankCost(triple) + 15f) * 4f;
+        foreach (List<PokerCardData> triple in result.triples)
+        {
+            float correction = hasCollector ? collectorTripleCostCorrection : 15f;
+            float multiplier = hasCollector ? collectorTripleMultiplier : 4f;
+            total += (GetRankCost(triple) + correction) * multiplier;
+        }
 
-        foreach (var fourOfAKind in result.fourOfAKinds)
-            tripleAndStraightScore += (GetRankCost(fourOfAKind) + 10f) * 8f;
+        foreach (List<PokerCardData> fourOfAKind in result.fourOfAKinds)
+        {
+            float correction = hasCollector ? collectorFourCostCorrection : 10f;
+            float multiplier = hasCollector ? collectorFourMultiplier : 8f;
+            total += (GetRankCost(fourOfAKind) + correction) * multiplier;
+        }
 
         // ===== 스트레이트 점수 =====
-        foreach (var straight in result.straights)
+        foreach (List<PokerCardData> straight in result.straights)
         {
             int cardCount = straight.Count;
-            float costStr = 0f;
+            if (cardCount <= 0)
+                continue;
 
-            foreach (var card in straight)
+            float cost = GetRankCost(straight);
+            float multiplier = GetStraightMultiplier(cardCount);
+
+            if (hasStraightMaster)
             {
-                if (!card.IsJoker)
-                    costStr += (int)card.rank;
+                float averageCost = cost / cardCount;
+                if (averageCost <= straightMasterLowAverageMax)
+                    multiplier = GetStraightMasterLowMultiplier(cardCount);
+                else if (averageCost >= straightMasterHighAverageMin)
+                    cost += straightMasterHighCostCorrection;
             }
 
-            float strScore = costStr * GetStraightMultiplier(cardCount);
-
-            // 스트레이트 강화:
-            // 카드가 N장이면 1.2^N 배율을 적용한다.
-            if (HasPerk(PerkType.StraightBoost))
-                strScore *= Mathf.Pow(1.2f, cardCount);
-
-            tripleAndStraightScore += strScore;
+            total += cost * multiplier;
         }
 
-        // 고득점 보너스:
-        // 트리플 + 스트레이트 점수의 합이 100 이상일 때만 10% 증가한다.
-        if (HasPerk(PerkType.HighScoreBonus)
-            && tripleAndStraightScore >= 100f)
-        {
-            tripleAndStraightScore *= 1.1f;
-        }
+        if (HasPerk(PerkType.EmptySlotBoost))
+            total += Mathf.Max(0, emptySlotCount) * compressedSlotPointsPerEmptySlot;
 
-        float total = tripleAndStraightScore;
-
-        // 무덤 카드 보너스:
-        // 기존 무덤 카드가 아니라 이번 결산에서 새로 무덤으로 간 카드만 계산한다.
         if (HasPerk(PerkType.GraveCardBonus))
-            total += result.newGraveCardCount * 20f;
+            total += result.newGraveCardCount * graveRobbingPointsPerCard;
+
+        if (HasPerk(PerkType.HighScoreBonus) && stoppedBeforeOpponent)
+            total += offensiveStopBonus;
 
         return total;
+    }
+
+    public string GetPerkDescription(PerkType perk)
+    {
+        switch (perk)
+        {
+            case PerkType.EmptySlotBoost:
+                return $"빈 슬롯 1칸당 {FormatRuleNumber(compressedSlotPointsPerEmptySlot)}점을 추가로 얻습니다.";
+            case PerkType.GraveCardBonus:
+                return $"이번 결산에서 무덤으로 간 카드 1장당 {FormatRuleNumber(graveRobbingPointsPerCard)}점을 추가로 얻습니다.";
+            case PerkType.TripleCostBoost:
+                return "트리플은 (코스트 합 + "
+                    + FormatRuleNumber(collectorTripleCostCorrection) + ") × "
+                    + FormatRuleNumber(collectorTripleMultiplier)
+                    + ", 포카드는 (코스트 합 + "
+                    + FormatRuleNumber(collectorFourCostCorrection) + ") × "
+                    + FormatRuleNumber(collectorFourMultiplier) + "로 계산합니다.";
+            case PerkType.HighScoreBonus:
+                return $"상대보다 먼저 STOP 상태에 진입하면 {FormatRuleNumber(offensiveStopBonus)}점을 추가로 얻습니다.";
+            case PerkType.StraightBoost:
+                return "스트레이트 평균이 "
+                    + FormatRuleNumber(straightMasterLowAverageMax)
+                    + " 이하이면 4·5·6연속 배율을 각각 ×"
+                    + FormatRuleNumber(straightMasterFourMultiplier) + "·×"
+                    + FormatRuleNumber(straightMasterFiveMultiplier) + "·×"
+                    + FormatRuleNumber(straightMasterSixMultiplier)
+                    + "으로 적용합니다. 평균이 "
+                    + FormatRuleNumber(straightMasterHighAverageMin)
+                    + " 이상이면 코스트 합에 "
+                    + FormatRuleNumber(straightMasterHighCostCorrection) + "을 더합니다.";
+            default:
+                return PerkCatalog.GetDescription(perk);
+        }
+    }
+
+    private float GetStraightMasterLowMultiplier(int cardCount)
+    {
+        switch (cardCount)
+        {
+            case 4: return straightMasterFourMultiplier;
+            case 5: return straightMasterFiveMultiplier;
+            case 6: return straightMasterSixMultiplier;
+            default: return GetStraightMultiplier(cardCount);
+        }
+    }
+
+    private static string FormatRuleNumber(float value)
+    {
+        return value.ToString("0.##");
     }
 
     private static float GetRankCost(List<PokerCardData> cards)
