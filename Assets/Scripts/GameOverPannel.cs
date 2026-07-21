@@ -10,6 +10,20 @@ public class GameOverPannel : MonoBehaviour
     [SerializeField] private float flipDuration = 0.2f;
     [SerializeField] private float moveDuration = 0.45f;
 
+    [Header("Game Over Audio")]
+    [SerializeField, Min(0f)] private float backgroundMusicFadeDuration = 0.3f;
+    [SerializeField] private AudioClip drumRollClip;
+    [SerializeField, Range(0f, 1f)] private float drumRollVolume = 0.12f;
+    [SerializeField] private AudioClip flipClip;
+    [SerializeField, Range(0f, 1f)] private float flipVolume = 0.18f;
+    [SerializeField] private AudioClip slideClip;
+    [SerializeField, Range(0f, 1f)] private float slideVolume = 0.12f;
+    [SerializeField] private AudioClip winClip;
+    [SerializeField, Range(0f, 1f)] private float winVolume = 0.18f;
+    [SerializeField] private AudioClip loseClip;
+    [SerializeField, Range(0f, 1f)] private float loseVolume = 0.15f;
+    [SerializeField, Range(0.1f, 3f)] private float losePitch = 0.75f;
+
     private RectTransform dealerCardRect;
     private Image dealerCardImage;
     private Image dealerPortraitImage;
@@ -21,10 +35,14 @@ public class GameOverPannel : MonoBehaviour
     private Text differenceText;
     private Text clickGuideText;
     private Font koreanFont;
+    private AudioSource drumRollAudioSource;
+    private AudioSource cardActionAudioSource;
+    private AudioSource resultAudioSource;
 
     private Sprite[] resultDealerFrames;
     private float resultFrameDuration;
     private Coroutine expressionCoroutine;
+    private bool resultPlayerWon;
     private bool showRequested;
     private bool revealed;
 
@@ -51,8 +69,10 @@ public class GameOverPannel : MonoBehaviour
         showRequested = true;
         gameObject.SetActive(true);
         EnsureResultUI();
+        EnsureAudioSources();
 
         revealed = false;
+        resultPlayerWon = playerWon;
         resultDealerFrames = dealerFrames;
         resultFrameDuration = Mathf.Max(0.01f, secondsPerFrame);
 
@@ -82,10 +102,16 @@ public class GameOverPannel : MonoBehaviour
         canvasGroup.alpha = 0f;
         canvasGroup.interactable = true;
         canvasGroup.blocksRaycasts = true;
+        drumRollAudioSource.Stop();
+        cardActionAudioSource.Stop();
+        resultAudioSource.Stop();
+        CardSoundController.StopBackgroundMusic(backgroundMusicFadeDuration);
         Time.timeScale = 0f;
 
         StopAllCoroutines();
-        StartCoroutine(FadeCanvas(0f, 1f, 1f / Mathf.Max(0.01f, fadeSpeed)));
+        StartCoroutine(FadeInThenStartDrumRoll(
+            0f,
+            1f / Mathf.Max(0.01f, fadeSpeed)));
     }
 
     // 기존 Inspector 이벤트가 남아 있어도 오류가 나지 않도록 유지한다.
@@ -94,8 +120,12 @@ public class GameOverPannel : MonoBehaviour
         showRequested = true;
         gameObject.SetActive(true);
         EnsureCanvasGroup();
+        EnsureAudioSources();
+        CardSoundController.StopBackgroundMusic(backgroundMusicFadeDuration);
         Time.timeScale = 0f;
-        StartCoroutine(FadeCanvas(canvasGroup.alpha, 1f, 1f / Mathf.Max(0.01f, fadeSpeed)));
+        StartCoroutine(FadeInThenStartDrumRoll(
+            canvasGroup.alpha,
+            1f / Mathf.Max(0.01f, fadeSpeed)));
     }
 
     public void Hide()
@@ -159,6 +189,7 @@ public class GameOverPannel : MonoBehaviour
         colors.pressedColor = new Color(0.62f, 0.62f, 0.62f, 1f);
         dealerCardButton.colors = colors;
         dealerCardButton.onClick.AddListener(RevealResult);
+        cardObject.AddComponent<CardButtonSoundRelay>();
 
         clickGuideText = CreateText(
             "Click Guide",
@@ -240,6 +271,8 @@ public class GameOverPannel : MonoBehaviour
             return;
 
         revealed = true;
+        if (drumRollAudioSource != null)
+            drumRollAudioSource.Stop();
         dealerCardButton.interactable = false;
         clickGuideText.gameObject.SetActive(false);
         StartCoroutine(RevealRoutine());
@@ -247,6 +280,8 @@ public class GameOverPannel : MonoBehaviour
 
     private IEnumerator RevealRoutine()
     {
+        yield return WaitUnscaled(0.04f);
+        PlaySound(cardActionAudioSource, flipClip, flipVolume);
         yield return ScaleX(dealerCardRect, 1f, 0f, flipDuration);
 
         dealerPortraitImage.color = Color.white;
@@ -257,11 +292,84 @@ public class GameOverPannel : MonoBehaviour
         }
 
         yield return ScaleX(dealerCardRect, 0f, 1f, flipDuration);
+        PlaySound(cardActionAudioSource, slideClip, slideVolume);
         yield return MoveCard(Vector2.zero, RevealedDealerPosition, moveDuration);
 
         resultGroup.interactable = true;
         resultGroup.blocksRaycasts = true;
+        PlaySound(
+            resultAudioSource,
+            resultPlayerWon ? winClip : loseClip,
+            resultPlayerWon ? winVolume : loseVolume,
+            resultPlayerWon ? 1f : losePitch);
         yield return FadeGroup(resultGroup, 0f, 1f, 0.35f);
+    }
+
+    private void EnsureAudioSources()
+    {
+        if (drumRollClip == null)
+            drumRollClip = Resources.Load<AudioClip>("Audio/GameOver/drum_roll_loop");
+
+        if (drumRollAudioSource == null)
+        {
+            drumRollAudioSource = CreateAudioSource();
+            drumRollAudioSource.loop = true;
+        }
+        if (cardActionAudioSource == null)
+            cardActionAudioSource = CreateAudioSource();
+        if (resultAudioSource == null)
+            resultAudioSource = CreateAudioSource();
+
+        PreloadAudio(drumRollClip);
+        PreloadAudio(flipClip);
+        PreloadAudio(slideClip);
+        PreloadAudio(winClip);
+        PreloadAudio(loseClip);
+    }
+
+    private AudioSource CreateAudioSource()
+    {
+        AudioSource source = gameObject.AddComponent<AudioSource>();
+        source.playOnAwake = false;
+        source.loop = false;
+        source.spatialBlend = 0f;
+        return source;
+    }
+
+    private static void PlaySound(
+        AudioSource source,
+        AudioClip clip,
+        float volume,
+        float pitch = 1f)
+    {
+        if (source == null || clip == null)
+            return;
+
+        source.Stop();
+        source.clip = clip;
+        source.volume = volume;
+        source.pitch = pitch;
+        source.time = 0f;
+        source.Play();
+    }
+
+    private static void PreloadAudio(AudioClip clip)
+    {
+        if (clip != null && clip.loadState == AudioDataLoadState.Unloaded)
+            clip.LoadAudioData();
+    }
+
+    private IEnumerator FadeInThenStartDrumRoll(float from, float duration)
+    {
+        yield return FadeCanvas(from, 1f, duration);
+
+        if (!revealed && drumRollAudioSource != null && drumRollClip != null)
+        {
+            drumRollAudioSource.clip = drumRollClip;
+            drumRollAudioSource.volume = drumRollVolume;
+            drumRollAudioSource.pitch = 1f;
+            drumRollAudioSource.Play();
+        }
     }
 
     private IEnumerator PlayDealerFrames()
@@ -422,6 +530,7 @@ public class GameOverPannel : MonoBehaviour
         Button button = buttonObject.GetComponent<Button>();
         button.targetGraphic = image;
         button.onClick.AddListener(action);
+        buttonObject.AddComponent<CardButtonSoundRelay>();
 
         Text text = CreateText("Label", buttonObject.transform, label, 30, TextAnchor.MiddleCenter);
         StretchToParent(text.rectTransform);

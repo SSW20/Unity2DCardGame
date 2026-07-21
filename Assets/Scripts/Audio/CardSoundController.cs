@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -53,6 +54,7 @@ public class CardSoundController : MonoBehaviour
     private AudioSource uiHoverSource;
     private AudioSource uiClickSource;
     private AudioSource backgroundMusicSource;
+    private Coroutine backgroundMusicFadeCoroutine;
     private bool backgroundMusicStarted;
     private float lastHoverPlayTime = float.NegativeInfinity;
     private float transferBurstStartTime = float.NegativeInfinity;
@@ -114,11 +116,62 @@ public class CardSoundController : MonoBehaviour
             return;
         }
 
+        if (player.backgroundMusicFadeCoroutine != null)
+        {
+            player.StopCoroutine(player.backgroundMusicFadeCoroutine);
+            player.backgroundMusicFadeCoroutine = null;
+        }
+
         player.backgroundMusicStarted = true;
         player.backgroundMusicSource.Stop();
         player.backgroundMusicSource.clip = player.backgroundMusicClip;
         player.backgroundMusicSource.volume = player.backgroundMusicVolume;
         player.backgroundMusicSource.Play();
+    }
+
+    public static void StopBackgroundMusic(float fadeDuration = 0.3f)
+    {
+        CardSoundController player = Resolve();
+        if (player == null || player.backgroundMusicSource == null)
+            return;
+
+        if (player.backgroundMusicFadeCoroutine != null)
+        {
+            player.StopCoroutine(player.backgroundMusicFadeCoroutine);
+            player.backgroundMusicFadeCoroutine = null;
+        }
+
+        if (!player.backgroundMusicSource.isPlaying || fadeDuration <= 0f)
+        {
+            player.backgroundMusicSource.Stop();
+            player.backgroundMusicSource.volume = player.backgroundMusicVolume;
+            player.backgroundMusicStarted = false;
+            return;
+        }
+
+        player.backgroundMusicFadeCoroutine =
+            player.StartCoroutine(player.FadeOutBackgroundMusic(fadeDuration));
+    }
+
+    private IEnumerator FadeOutBackgroundMusic(float duration)
+    {
+        float startVolume = backgroundMusicSource.volume;
+        float elapsed = 0f;
+
+        while (elapsed < duration && backgroundMusicSource.isPlaying)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            backgroundMusicSource.volume = Mathf.Lerp(
+                startVolume,
+                0f,
+                Mathf.Clamp01(elapsed / Mathf.Max(0.01f, duration)));
+            yield return null;
+        }
+
+        backgroundMusicSource.Stop();
+        backgroundMusicSource.volume = backgroundMusicVolume;
+        backgroundMusicStarted = false;
+        backgroundMusicFadeCoroutine = null;
     }
 
     public static void PlayHover()

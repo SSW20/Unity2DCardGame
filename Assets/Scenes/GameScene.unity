@@ -6290,6 +6290,18 @@ MonoBehaviour:
   fadeSpeed: 1
   flipDuration: 0.2
   moveDuration: 0.45
+  backgroundMusicFadeDuration: 0.3
+  drumRollClip: {fileID: 8300000, guid: 7ea60efee32243e5ae9ce47be9f99915, type: 3}
+  drumRollVolume: 0.12
+  flipClip: {fileID: 8300000, guid: 4e2de1e80586e3b4bb253f8853e1559e, type: 3}
+  flipVolume: 0.18
+  slideClip: {fileID: 8300000, guid: 659bac9e127e501419d8f64130539bb0, type: 3}
+  slideVolume: 0.12
+  winClip: {fileID: 8300000, guid: c77c75e9cb9a489cac2b4c6dc1cf1af7, type: 3}
+  winVolume: 0.18
+  loseClip: {fileID: 8300000, guid: 4fbfa148a8c648feb07d7e02a3c380e4, type: 3}
+  loseVolume: 0.15
+  losePitch: 0.75
 --- !u!1 &1794740810
 GameObject:
   m_ObjectHideFlags: 0
