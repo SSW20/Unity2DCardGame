@@ -740,7 +740,7 @@ MonoBehaviour:
   maxCostPerTurn: 21
   includeJokersInDeck: 1
   jokerCount: 5
-  jokerSprite: {fileID: 0}
+  jokerSprite: {fileID: 21300000, guid: 9cabd1462283036479ec95f7aafa94f4, type: 3}
   ownedPerks: 
   compressedSlotPointsPerEmptySlot: 10
   graveRobbingPointsPerCard: 10
@@ -4139,7 +4139,7 @@ MonoBehaviour:
   maxCostPerTurn: 21
   includeJokersInDeck: 0
   jokerCount: 5
-  jokerSprite: {fileID: 0}
+  jokerSprite: {fileID: 21300000, guid: 9cabd1462283036479ec95f7aafa94f4, type: 3}
   ownedPerks: 
   compressedSlotPointsPerEmptySlot: 10
   graveRobbingPointsPerCard: 10
@@ -6847,6 +6847,11 @@ MonoBehaviour:
   specialSlotContainer: {fileID: 302995025}
   candidateCardSize: {x: 180, y: 260}
   flipDuration: 0.35
+  sameNumberCollectorSprite: {fileID: 21300000, guid: c4852327a495eef4ca17bd7e9b9389aa, type: 3}
+  offensiveSprite: {fileID: 21300000, guid: f5bfe1741a256c34eb4362983181b1db, type: 3}
+  compressedSlotSprite: {fileID: 21300000, guid: b29afdaae3ebba640a94cbd18a8a7bbd, type: 3}
+  graveRobbingSprite: {fileID: 21300000, guid: 28a0af62a6c47a4468c042cbd4e8ce15, type: 3}
+  straightMasterSprite: {fileID: 21300000, guid: 3293435444279a34e92ee8018b41ca54, type: 3}
 --- !u!1 &1961512936
 GameObject:
   m_ObjectHideFlags: 0

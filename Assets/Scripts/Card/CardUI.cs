@@ -24,6 +24,9 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
     [Header("Sprite")]
     private Sprite cardFrontImage;
     [SerializeField] private Sprite cardBackImage;
+    private Sprite specialFrontImage;
+
+    public Sprite SpecialFrontImage => specialFrontImage;
 
     [Header("Card Type")]
     [SerializeField] public CardType cardType;
@@ -131,8 +134,22 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
     public void SetSpecialFace(bool faceUp)
     {
         if (cardImage == null) cardImage = GetComponent<Image>();
-        if (cardImage != null) cardImage.color = faceUp ? new Color(0.96f, 0.82f, 0.42f) : new Color(0.22f, 0.18f, 0.32f);
+        if (cardImage != null)
+        {
+            Sprite faceSprite = faceUp ? specialFrontImage : cardBackImage;
+            if (faceSprite != null)
+                cardImage.sprite = faceSprite;
+
+            cardImage.color = specialFrontImage != null
+                ? Color.white
+                : (faceUp ? new Color(0.96f, 0.82f, 0.42f) : new Color(0.22f, 0.18f, 0.32f));
+        }
         originalColor = cardImage != null ? cardImage.color : Color.white;
+    }
+
+    public void SetSpecialFrontImage(Sprite sprite)
+    {
+        specialFrontImage = sprite;
     }
 
     public Tween FlipSpecialFaceUp(float duration)

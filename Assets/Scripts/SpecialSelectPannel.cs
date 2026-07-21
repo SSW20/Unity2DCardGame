@@ -13,6 +13,13 @@ public class SpecialSelectPanel : MonoBehaviour
     [SerializeField] private Vector2 candidateCardSize = new Vector2(180f, 260f);
     [SerializeField] private float flipDuration = 0.35f;
 
+    [Header("Perk Card Faces")]
+    [SerializeField] private Sprite sameNumberCollectorSprite;
+    [SerializeField] private Sprite offensiveSprite;
+    [SerializeField] private Sprite compressedSlotSprite;
+    [SerializeField] private Sprite graveRobbingSprite;
+    [SerializeField] private Sprite straightMasterSprite;
+
     public bool isActive { get; private set; }
     private bool isSelecting;
     private readonly Dictionary<CardUI, PerkType> perkCandidates = new Dictionary<CardUI, PerkType>();
@@ -51,7 +58,8 @@ public class SpecialSelectPanel : MonoBehaviour
         {
             CardUI card = CreateCandidateCard(
                 PerkCatalog.GetName(perk),
-                PerkCatalog.GetDescription(perk));
+                PerkCatalog.GetDescription(perk),
+                GetPerkSprite(perk));
             if (card != null)
                 perkCandidates[card] = perk;
         }
@@ -70,7 +78,8 @@ public class SpecialSelectPanel : MonoBehaviour
             cardPrefab,
             emptySlot,
             PerkCatalog.GetName(perk),
-            PerkCatalog.GetDescription(perk));
+            PerkCatalog.GetDescription(perk),
+            GetPerkSprite(perk));
     }
 
     private bool PrepareToShow()
@@ -100,7 +109,10 @@ public class SpecialSelectPanel : MonoBehaviour
         return true;
     }
 
-    private CardUI CreateCandidateCard(string name, string description)
+    private CardUI CreateCandidateCard(
+        string name,
+        string description,
+        Sprite frontSprite = null)
     {
         GameObject card = Instantiate(cardPrefab, cardContainer);
         RectTransform cardRect = card.GetComponent<RectTransform>();
@@ -118,6 +130,7 @@ public class SpecialSelectPanel : MonoBehaviour
         cardUI.cardName = name;
         cardUI.cardDescription = description;
         cardUI.onClicked = OnCardSelected;
+        cardUI.SetSpecialFrontImage(frontSprite);
         cardUI.SetSpecialFace(false);
 
         CardDragManager dragManager = card.GetComponent<CardDragManager>();
@@ -173,7 +186,8 @@ public class SpecialSelectPanel : MonoBehaviour
             selected.gameObject,
             emptySlot,
             selected.cardName,
-            selected.cardDescription);
+            selected.cardDescription,
+            selected.SpecialFrontImage);
 
         bool selectedPerkCandidate = perkCandidates.ContainsKey(selected);
 
@@ -188,7 +202,8 @@ public class SpecialSelectPanel : MonoBehaviour
         GameObject source,
         CardSlot slot,
         string name,
-        string description)
+        string description,
+        Sprite frontSprite = null)
     {
         if (source == null || slot == null)
             return false;
@@ -205,6 +220,7 @@ public class SpecialSelectPanel : MonoBehaviour
         placedUI.cardName = name;
         placedUI.cardDescription = description;
         placedUI.onClicked = null;
+        placedUI.SetSpecialFrontImage(frontSprite);
         placedUI.SetSpecialFace(true);
 
         RectTransform rect = placedCard.GetComponent<RectTransform>();
@@ -225,6 +241,25 @@ public class SpecialSelectPanel : MonoBehaviour
 
         slot.SetCard(placedCard);
         return true;
+    }
+
+    private Sprite GetPerkSprite(PerkType perk)
+    {
+        switch (perk)
+        {
+            case PerkType.TripleCostBoost:
+                return sameNumberCollectorSprite;
+            case PerkType.HighScoreBonus:
+                return offensiveSprite;
+            case PerkType.EmptySlotBoost:
+                return compressedSlotSprite;
+            case PerkType.GraveCardBonus:
+                return graveRobbingSprite;
+            case PerkType.StraightBoost:
+                return straightMasterSprite;
+            default:
+                return null;
+        }
     }
 
     private CardSlot FindEmptySpecialSlot()
