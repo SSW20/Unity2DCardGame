@@ -42,8 +42,38 @@ public class SettlementScoreClashUI : MonoBehaviour
     [SerializeField] private float winPunchDuration = 0.4f;
     [SerializeField] private float endHoldDuration = 0.3f;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip collideClip;
+    [SerializeField, Range(0f, 1f)] private float collideVolume = 0.16f;
+    [SerializeField] private AudioClip pushClip;
+    [SerializeField, Range(0f, 1f)] private float pushVolume = 0.09f;
+    [SerializeField, Range(0.1f, 2f)] private float pushPitch = 0.75f;
+    [SerializeField] private AudioClip winnerClip;
+    [SerializeField, Range(0f, 1f)] private float winnerVolume = 0.16f;
+
     private float displayedPlayerValue;
     private float displayedAiValue;
+    private AudioSource collideAudioSource;
+    private AudioSource pushAudioSource;
+    private AudioSource winnerAudioSource;
+
+    private void Awake()
+    {
+        if (collideClip == null)
+            collideClip = Resources.Load<AudioClip>("Audio/Settlement/settlement_impact");
+        if (pushClip == null)
+            pushClip = Resources.Load<AudioClip>("Audio/Settlement/settlement_push_grind");
+        if (winnerClip == null)
+            winnerClip = Resources.Load<AudioClip>("Audio/Settlement/settlement_win_fanfare");
+
+        collideAudioSource = CreateAudioSource();
+        pushAudioSource = CreateAudioSource();
+        winnerAudioSource = CreateAudioSource();
+
+        collideClip?.LoadAudioData();
+        pushClip?.LoadAudioData();
+        winnerClip?.LoadAudioData();
+    }
 
     public void PlayClash(float playerScore, float aiScore, Action onComplete)
     {
@@ -86,6 +116,8 @@ public class SettlementScoreClashUI : MonoBehaviour
 
     private void SetupStartState(float playerScore, float aiScore)
     {
+        StopSettlementSounds();
+
         playerScoreRect.gameObject.SetActive(true);
         aiScoreRect.gameObject.SetActive(true);
 
@@ -116,6 +148,8 @@ public class SettlementScoreClashUI : MonoBehaviour
     // 접촉 지점에서 부딪히는 충격만 주고, 바로 이긴 쪽 방향으로 밀리는 단계로 넘어간다.
     private IEnumerator CollideImpact()
     {
+        PlaySound(collideAudioSource, collideClip, collideVolume);
+
         playerScoreRect.anchoredPosition = PlayerMeetPos;
         aiScoreRect.anchoredPosition = AiMeetPos;
 
@@ -147,6 +181,8 @@ public class SettlementScoreClashUI : MonoBehaviour
 
         bool playerWins = playerScore > aiScore;
 
+        PlaySound(pushAudioSource, pushClip, pushVolume, pushPitch);
+
         RectTransform loserRect = playerWins ? aiScoreRect : playerScoreRect;
         RectTransform winnerRect = playerWins ? playerScoreRect : aiScoreRect;
         Vector2 loserStartPos = playerWins ? aiStartAnchoredPos : playerStartAnchoredPos;
@@ -170,7 +206,36 @@ public class SettlementScoreClashUI : MonoBehaviour
         yield return pushSeq.WaitForCompletion();
 
         loserRect.gameObject.SetActive(false);
+        PlaySound(winnerAudioSource, winnerClip, winnerVolume);
         yield return winnerRect.DOPunchScale(Vector3.one * 0.3f, winPunchDuration, 8, 1f).WaitForCompletion();
+    }
+
+    private AudioSource CreateAudioSource()
+    {
+        AudioSource source = gameObject.AddComponent<AudioSource>();
+        source.playOnAwake = false;
+        source.loop = false;
+        source.spatialBlend = 0f;
+        return source;
+    }
+
+    private static void PlaySound(AudioSource source, AudioClip clip, float volume, float pitch = 1f)
+    {
+        if (source == null || clip == null)
+            return;
+
+        source.Stop();
+        source.clip = clip;
+        source.volume = volume;
+        source.pitch = pitch;
+        source.Play();
+    }
+
+    private void StopSettlementSounds()
+    {
+        collideAudioSource?.Stop();
+        pushAudioSource?.Stop();
+        winnerAudioSource?.Stop();
     }
 
     private void SetPlayerValue(float value)

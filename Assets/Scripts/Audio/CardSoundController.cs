@@ -39,6 +39,11 @@ public class CardSoundController : MonoBehaviour
     [SerializeField] private AudioClip uiClickClip;
     [SerializeField, Range(0f, 1f)] private float uiClickVolume = 0.2f;
 
+    [Header("Background Music")]
+    [SerializeField] private AudioClip backgroundMusicClip;
+    [SerializeField, Range(0f, 1f)] private float backgroundMusicVolume = 0.1f;
+    [SerializeField] private bool loopBackgroundMusic = true;
+
     private AudioSource hoverSource;
     private AudioSource drawSource;
     private AudioSource placeSource;
@@ -47,6 +52,7 @@ public class CardSoundController : MonoBehaviour
     private AudioSource jokerToDeckSource;
     private AudioSource uiHoverSource;
     private AudioSource uiClickSource;
+    private AudioSource backgroundMusicSource;
     private float lastHoverPlayTime = float.NegativeInfinity;
     private float transferBurstStartTime = float.NegativeInfinity;
     private int transferSoundsInBurst;
@@ -60,6 +66,10 @@ public class CardSoundController : MonoBehaviour
         }
 
         instance = this;
+
+        if (backgroundMusicClip == null)
+            backgroundMusicClip = Resources.Load<AudioClip>("Audio/Music/voices_of_spring");
+
         hoverSource = CreateSource();
         drawSource = CreateSource();
         placeSource = CreateSource();
@@ -68,6 +78,8 @@ public class CardSoundController : MonoBehaviour
         jokerToDeckSource = CreateSource();
         uiHoverSource = CreateSource();
         uiClickSource = CreateSource();
+        backgroundMusicSource = CreateSource();
+        backgroundMusicSource.loop = loopBackgroundMusic;
 
         PreloadClips(hoverClips);
         PreloadClips(drawClips);
@@ -77,6 +89,7 @@ public class CardSoundController : MonoBehaviour
         PreloadClips(jokerToDeckClips);
         PreloadClip(uiHoverClip);
         PreloadClip(uiClickClip);
+        PreloadClip(backgroundMusicClip);
     }
 
     private void Start()
@@ -86,6 +99,13 @@ public class CardSoundController : MonoBehaviour
         {
             if (button != null && button.GetComponent<CardButtonSoundRelay>() == null)
                 button.gameObject.AddComponent<CardButtonSoundRelay>();
+        }
+
+        if (backgroundMusicSource != null && backgroundMusicClip != null)
+        {
+            backgroundMusicSource.clip = backgroundMusicClip;
+            backgroundMusicSource.volume = backgroundMusicVolume;
+            backgroundMusicSource.Play();
         }
     }
 
