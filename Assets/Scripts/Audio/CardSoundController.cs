@@ -53,6 +53,7 @@ public class CardSoundController : MonoBehaviour
     private AudioSource uiHoverSource;
     private AudioSource uiClickSource;
     private AudioSource backgroundMusicSource;
+    private bool backgroundMusicStarted;
     private float lastHoverPlayTime = float.NegativeInfinity;
     private float transferBurstStartTime = float.NegativeInfinity;
     private int transferSoundsInBurst;
@@ -100,13 +101,24 @@ public class CardSoundController : MonoBehaviour
             if (button != null && button.GetComponent<CardButtonSoundRelay>() == null)
                 button.gameObject.AddComponent<CardButtonSoundRelay>();
         }
+    }
 
-        if (backgroundMusicSource != null && backgroundMusicClip != null)
+    public static void PlayBackgroundMusic()
+    {
+        CardSoundController player = Resolve();
+        if (player == null
+            || player.backgroundMusicSource == null
+            || player.backgroundMusicClip == null
+            || player.backgroundMusicStarted)
         {
-            backgroundMusicSource.clip = backgroundMusicClip;
-            backgroundMusicSource.volume = backgroundMusicVolume;
-            backgroundMusicSource.Play();
+            return;
         }
+
+        player.backgroundMusicStarted = true;
+        player.backgroundMusicSource.Stop();
+        player.backgroundMusicSource.clip = player.backgroundMusicClip;
+        player.backgroundMusicSource.volume = player.backgroundMusicVolume;
+        player.backgroundMusicSource.Play();
     }
 
     public static void PlayHover()

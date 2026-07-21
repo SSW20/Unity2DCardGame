@@ -268,6 +268,7 @@ public class GameTurnManager : MonoBehaviour
         UpdatePhaseUI();
 
         gameInputManager.StartPlayerTurn();
+        CardSoundController.PlayBackgroundMusic();
     }
 
     private void StartAITurn()
