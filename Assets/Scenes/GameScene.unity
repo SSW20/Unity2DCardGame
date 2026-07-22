@@ -742,8 +742,19 @@ MonoBehaviour:
   jokerCount: 5
   jokerSprite: {fileID: 21300000, guid: 9cabd1462283036479ec95f7aafa94f4, type: 3}
   ownedPerks: 
-  compressedSlotPointsPerEmptySlot: 10
+  compressedSlotPointsPerEmptySlot: 5
   graveRobbingPointsPerCard: 10
+  collectorTripleCostCorrection: 25
+  collectorTripleMultiplier: 4
+  collectorFourCostCorrection: 25
+  collectorFourMultiplier: 8
+  offensiveStopBonus: 30
+  straightMasterLowAverageMax: 6
+  straightMasterHighAverageMin: 7
+  straightMasterFourMultiplier: 4
+  straightMasterFiveMultiplier: 5
+  straightMasterSixMultiplier: 6
+  straightMasterHighCostCorrection: 20
   pokerDeck: []
   playerHand: []
   fieldList: []
@@ -4143,6 +4154,17 @@ MonoBehaviour:
   ownedPerks: 
   compressedSlotPointsPerEmptySlot: 10
   graveRobbingPointsPerCard: 10
+  collectorTripleCostCorrection: 25
+  collectorTripleMultiplier: 4
+  collectorFourCostCorrection: 25
+  collectorFourMultiplier: 8
+  offensiveStopBonus: 100
+  straightMasterLowAverageMax: 6
+  straightMasterHighAverageMin: 7
+  straightMasterFourMultiplier: 4
+  straightMasterFiveMultiplier: 5
+  straightMasterSixMultiplier: 6
+  straightMasterHighCostCorrection: 20
   pokerDeck: []
   playerHand: []
   fieldList: []

@@ -94,7 +94,6 @@ public class GameTurnManager : MonoBehaviour
     private int playerTotalScore = 0;
     private int aiTotalScore = 0;
     private int currentRound = 0;
-    private Text readableTurnBannerText;
     private Coroutine dealerExpressionCoroutine;
     private bool jokerDeckIntroPlayed;
 
@@ -102,7 +101,7 @@ public class GameTurnManager : MonoBehaviour
 
     private void Awake()
     {
-        CreateReadableTurnBannerText();
+        ApplyButtonFontToTurnBanner();
     }
 
     private void Start()
@@ -312,9 +311,7 @@ public class GameTurnManager : MonoBehaviour
         if (turnBannerImage != null && turnBannerFrameSprite != null)
             turnBannerImage.sprite = turnBannerFrameSprite;
 
-        if (readableTurnBannerText != null)
-            readableTurnBannerText.text = message;
-        else if (turnBannerText != null)
+        if (turnBannerText != null)
             turnBannerText.text = message;
 
         turnBannerObject.SetActive(true);
@@ -322,30 +319,20 @@ public class GameTurnManager : MonoBehaviour
         turnBannerObject.SetActive(false);
     }
 
-    private void CreateReadableTurnBannerText()
+    private void ApplyButtonFontToTurnBanner()
     {
-        if (turnBannerObject == null) return;
+        if (turnBannerText == null || stopButton == null) return;
 
-        // 현재 TMP 폰트에는 한글 글리프가 없어 Windows의 한글 시스템 폰트를 사용한다.
-        if (turnBannerText != null) turnBannerText.gameObject.SetActive(false);
+        TMP_Text buttonText = stopButton.GetComponentInChildren<TMP_Text>(true);
+        if (buttonText == null || buttonText.font == null) return;
 
-        GameObject textObject = new GameObject("Turn Banner Korean Text", typeof(RectTransform), typeof(Text));
-        textObject.transform.SetParent(turnBannerObject.transform, false);
-
-        RectTransform rect = textObject.GetComponent<RectTransform>();
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = new Vector2(40f, 25f);
-        rect.offsetMax = new Vector2(-40f, -25f);
-
-        readableTurnBannerText = textObject.GetComponent<Text>();
-        readableTurnBannerText.font = Font.CreateDynamicFontFromOSFont("Malgun Gothic", 44)
-            ?? Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        readableTurnBannerText.fontSize = 44;
-        readableTurnBannerText.fontStyle = FontStyle.Bold;
-        readableTurnBannerText.alignment = TextAnchor.MiddleCenter;
-        readableTurnBannerText.color = Color.white;
-        readableTurnBannerText.raycastTarget = false;
+        turnBannerText.font = buttonText.font;
+        turnBannerText.fontSharedMaterial = buttonText.fontSharedMaterial;
+        turnBannerText.alignment = TextAlignmentOptions.Center;
+        turnBannerText.enableAutoSizing = true;
+        turnBannerText.fontSizeMin = 30f;
+        turnBannerText.fontSizeMax = 44f;
+        turnBannerText.gameObject.SetActive(true);
     }
 
     public void OnPlayerTurnEndButton()
@@ -385,7 +372,7 @@ public class GameTurnManager : MonoBehaviour
         gameInputManager.CleanupPlayerHandAfterTurn();
 
         yield return ShowTurnBanner(
-            "조커 미사용: 강제 STOP",
+            "조커 미사용\n강제 결산",
             jokerForcedStopMessageDuration);
 
         currentTurn = TurnOwner.Player;
@@ -422,7 +409,7 @@ public class GameTurnManager : MonoBehaviour
         gameInputManager.CleanupPlayerHandAfterTurn();
 
         yield return ShowTurnBanner(
-            "필드 슬롯 가득 참: 강제 STOP",
+            "필드 슬롯 가득 참\n강제 결산",
             fieldFullForcedStopMessageDuration);
 
         currentTurn = TurnOwner.Player;
@@ -501,7 +488,7 @@ public class GameTurnManager : MonoBehaviour
         currentPhase = GamePhase.Stop;
         UpdatePhaseUI();
 
-        yield return ShowTurnBanner("정산 중", turnBannerDuration);
+        yield return ShowTurnBanner("라운드 결산", turnBannerDuration);
 
         currentPhase = GamePhase.Settlement;
         UpdatePhaseUI();
