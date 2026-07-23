@@ -7132,7 +7132,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   aiCardManager: {fileID: 1287922615}
   playerGameInputManager: {fileID: 0}
-  fieldRemovalChancePercent: 50
+  fieldRemovalChancePercent: 5
   fieldRemovalMoveDuration: 0.45
   aiFieldSlotContainer: {fileID: 1794740811}
   cardPrefab: {fileID: 1302585807115820156, guid: 624ff7575bd56a8489d72d5652f6f630, type: 3}

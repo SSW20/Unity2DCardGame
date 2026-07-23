@@ -47,7 +47,8 @@ public class CardHoverManager : MonoBehaviour
             if (card == null) continue;
             if (card.isDragging) continue;
             if (aiController != null && aiController.IsOwnedCard(card)) continue;
-            if (card.cardType == CardType.Field
+            if (IsInFieldSlot(card)
+                || card.cardType == CardType.Field
                 || card.cardType == CardType.Deck
                 || card.cardType == CardType.Grave)
             {
@@ -92,7 +93,10 @@ public class CardHoverManager : MonoBehaviour
             CardSoundController.PlayHover();
         }
 
-        if (descriptionPanel != null && currentHovered != null && currentHovered.cardType == CardType.Special)
+        if (descriptionPanel != null
+            && currentHovered != null
+            && currentHovered.cardType == CardType.Special
+            && currentHovered.IsSpecialFaceUp)
             descriptionPanel.Show(currentHovered);
         else if (descriptionPanel != null)
             descriptionPanel.Hide();
@@ -126,6 +130,14 @@ public class CardHoverManager : MonoBehaviour
         foreach (CardUI card in hitHandCards)
         {
             if (card == null) continue;
+            if (IsInFieldSlot(card)
+                || card.cardType == CardType.Field
+                || card.cardType == CardType.Deck
+                || card.cardType == CardType.Grave)
+            {
+                continue;
+            }
+
             Vector2 cardScreenPos = RectTransformUtility.WorldToScreenPoint(
                 null,
                 card.transform.position
@@ -142,5 +154,11 @@ public class CardHoverManager : MonoBehaviour
         }
 
         return nearest;
-    } 
+    }
+
+    private static bool IsInFieldSlot(CardUI card)
+    {
+        CardSlot slot = card != null ? card.GetComponentInParent<CardSlot>() : null;
+        return slot != null && slot.category == SlotCategory.Field;
+    }
 }

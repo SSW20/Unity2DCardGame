@@ -27,6 +27,7 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
     private Sprite specialFrontImage;
 
     public Sprite SpecialFrontImage => specialFrontImage;
+    public bool IsSpecialFaceUp { get; private set; }
 
     [Header("Card Type")]
     [SerializeField] public CardType cardType;
@@ -96,7 +97,12 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
         if (isHover)
         {
             transform.DOKill(true);   
-            targetScale = originalScale * (cardType == CardType.Special ? 1.12f : hoverScale);
+            float scaleMultiplier = cardType == CardType.Special
+                ? 1.12f
+                : cardType == CardType.Field
+                    ? 1f
+                    : hoverScale;
+            targetScale = originalScale * scaleMultiplier;
             if (cardType == CardType.Special && cardImage != null)
                 cardImage.color = Color.Lerp(originalColor, Color.white, 0.35f);
             if(cardType == CardType.Hand)
@@ -133,6 +139,8 @@ public class CardUI : MonoBehaviour, IPointerClickHandler
 
     public void SetSpecialFace(bool faceUp)
     {
+        IsSpecialFaceUp = faceUp;
+
         if (cardImage == null) cardImage = GetComponent<Image>();
         if (cardImage != null)
         {

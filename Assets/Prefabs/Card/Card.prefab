@@ -92,7 +92,7 @@ MonoBehaviour:
   useAnimation: 1
   hoverScale: 1.5
   animSpeed: 10
-  yOffset: 100
+  yOffset: 60
   cardBackImage: {fileID: 21300000, guid: 0da6f36aefb08534d94f1cd3060f2be0, type: 3}
   cardType: 0
   pokerCardData:

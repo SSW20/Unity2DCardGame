@@ -198,10 +198,6 @@ public class GameInputManager : MonoBehaviour
 
         UpdateScorePreview();
 
-        if (Input.GetKeyDown(KeyCode.G))
-        {
-            gameTurnManager?.ShowDebugFinalResult();
-        }
     }
 
 
@@ -544,7 +540,7 @@ public class GameInputManager : MonoBehaviour
             "JokerDescription",
             "<size=115%><b>조커 카드</b></size>\n" +
             "코스트: 10\n" +
-            "이번 턴에 손패의 조커를 모두 내지 않으면\n강제로 STOP됩니다.",
+            "이번 턴에 손패의 조커를 모두 내지 않으면\n강제로 결산됩니다.",
             new Vector2(0.77f, 0.67f),
             new Vector2(0.97f, 0.84f),
             scoreInfoBodyFontSize * 0.85f,
