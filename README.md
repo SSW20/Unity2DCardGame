@@ -11,7 +11,7 @@
 아트 : 지은솔
 				   
 
-게임 제목 : HOLD your mEMory 아니면 Bet your Guts
+게임 제목 : ANTE
 
 게임 장르 : 1:1 카드게임
 
